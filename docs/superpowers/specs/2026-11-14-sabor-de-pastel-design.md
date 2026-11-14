@@ -33,7 +33,7 @@ Motivação: a pastelaria real (da namorada do autor) vai usar o app para o Proj
 
 **Dentro do escopo:**
 - Login para admin e balconistas (usuário e senha; e-mail só para recuperar a senha).
-- Tela do atendente: novo pedido, pedidos do dia, resumo do dia, cardápio, log de ações e cadastro de balconistas.
+- Tela do atendente: novo pedido, pedidos do dia, resumo do dia, cardápio e log de ações. (O cadastro de balconistas é feito no painel do Supabase; veja a seção 9.)
 - Tela do cliente: cardápio com itens disponíveis, carrinho, nome e tipo de pedido (retirada ou entrega), envio de pedido e acompanhamento do status em tempo real.
 - Log de ações com quem, quando e o quê.
 - Atualização em tempo real: pedido novo aparece na tela do atendente sem recarregar.
