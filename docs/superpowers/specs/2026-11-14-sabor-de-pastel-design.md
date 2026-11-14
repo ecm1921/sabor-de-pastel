@@ -34,7 +34,7 @@ Motivação: a pastelaria real (da namorada do autor) vai usar o app para o Proj
 **Dentro do escopo:**
 - Login para admin e balconistas (e-mail e senha).
 - Tela do atendente: novo pedido, pedidos do dia, resumo do dia, cardápio, log de ações e cadastro de balconistas.
-- Tela do cliente: cardápio com itens disponíveis, carrinho, nome e tipo de pedido (balcão, retirada ou mesa), envio de pedido e acompanhamento do status pelo número do pedido.
+- Tela do cliente: cardápio com itens disponíveis, carrinho, nome e tipo de pedido (retirada ou entrega), envio de pedido e acompanhamento do status em tempo real.
 - Log de ações com quem, quando e o quê.
 - Atualização em tempo real: pedido novo aparece na tela do atendente sem recarregar.
 - Exportação do resumo do dia em CSV (já existe hoje).
@@ -82,7 +82,7 @@ supabase/
 - `id`, `nome`, `categoria` (`Pastéis`, `Bebidas`, `Outros`), `preco` (usado em Bebidas e Outros), `preco_m` e `preco_g` (usados em Pastéis), `ativo`, `criado_em`
 
 **pedidos**
-- `id` (uuid aleatório, gerado no banco; o aparelho do cliente guarda esse código para acompanhar o pedido), `numero` (sequencial por dia, gerado no banco), `dia` (data), `cliente` (texto livre, opcional), `tipo` (`Balcão`, `Retirada`, `Mesa`), `pagamento` (`Dinheiro`, `Pix`, `Cartão`), `observacao`, `status` (`recebido`, `preparando`, `pronto`, `entregue`, `cancelado`), `total` (calculado no banco), `criado_em`, `atualizado_por` (id do perfil, se foi o balconista)
+- `id` (uuid aleatório, gerado no banco; o aparelho do cliente guarda esse código para acompanhar o pedido), `numero` (sequencial por dia, gerado no banco), `dia` (data), `cliente` (texto livre, opcional), `tipo` (`Retirada` ou `Entrega`), `pagamento` (`Dinheiro`, `Pix`, `Cartão`), `observacao`, `status` (`recebido`, `preparando`, `pronto`, `entregue`, `cancelado`), `total` (calculado no banco), `criado_em`, `atualizado_por` (id do perfil, se foi o balconista)
 
 **itens_pedido**
 - `id`, `pedido_id`, `produto_id`, `nome_snapshot` (nome no momento da venda), `tamanho` (`M`, `G` ou nulo), `quantidade`, `preco_unitario` (snapshot)
@@ -124,7 +124,7 @@ Regras específicas:
 2. Pedidos do cliente aparecem na aba Pedidos, com aviso sonoro e destaque.
 3. **Aceita** o pedido: ele muda para `preparando` e a tela do cliente atualiza na hora. Depois marca como `pronto` e `entregue`. O cliente vê cada mudança sem recarregar a página.
 4. Pode cancelar com confirmação. O cancelamento sai do total do dia, mas continua na lista.
-5. Pode criar pedido de balcão pela aba Novo pedido (mesma tela que existe hoje).
+5. Pode criar pedido pela aba Novo pedido (mesma tela que existe hoje), para quem chega ao balcão. Esse pedido é marcado como Retirada ou Entrega, como os pedidos do cliente.
 
 **Admin**
 - Tudo do balconista, mais: cardápio (criar, editar preço, marcar esgotado, excluir), resumo com filtro por dia, log de ações com filtro por balconista e data.
@@ -136,15 +136,15 @@ Regras específicas:
 
 Os nomes que o cliente vê dependem do tipo do pedido:
 
-| Status interno | Balcão | Retirada | Entrega |
-|---|---|---|---|
-| `recebido` | Recebido | Recebido | Recebido |
-| `preparando` | Preparando | Preparando | Preparando |
-| `pronto` | Pronto | **Pronto** (pode retirar) | **Saiu para entrega** |
-| `entregue` | Entregue | Entregue | Entregue |
-| `cancelado` | Cancelado | Cancelado | Cancelado |
+| Status interno | Retirada | Entrega |
+|---|---|---|
+| `recebido` | Recebido | Recebido |
+| `preparando` | Preparando | Preparando |
+| `pronto` | **Pronto** (pode retirar) | **Saiu para entrega** |
+| `entregue` | Entregue | Entregue |
+| `cancelado` | Cancelado | Cancelado |
 
-Não é permitido voltar de status. Cancelado não volta. Pedidos de Entrega passam por "Saiu para entrega" antes de "Entregue", e os de Balcão e Retirada não passam por esse estado.
+Não é permitido voltar de status. Cancelado não volta. Pedidos de Entrega passam por "Saiu para entrega" antes de "Entregue". Pedidos de Retirada vão de "Pronto" direto para "Entregue".
 
 ## 8. Tratamento de erro e casos de borda
 
