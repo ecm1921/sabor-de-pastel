@@ -32,7 +32,7 @@ Motivação: a pastelaria real (da namorada do autor) vai usar o app para o Proj
 ## 3. Escopo
 
 **Dentro do escopo:**
-- Login para admin e balconistas (e-mail e senha).
+- Login para admin e balconistas (usuário e senha; e-mail só para recuperar a senha).
 - Tela do atendente: novo pedido, pedidos do dia, resumo do dia, cardápio, log de ações e cadastro de balconistas.
 - Tela do cliente: cardápio com itens disponíveis, carrinho, nome e tipo de pedido (retirada ou entrega), envio de pedido e acompanhamento do status em tempo real.
 - Log de ações com quem, quando e o quê.
@@ -76,7 +76,7 @@ supabase/
 ## 5. Modelo de dados
 
 **perfis** (um por usuário de Auth)
-- `id` (uuid, mesmo id do Auth), `nome`, `papel` (`admin` ou `balconista`), `ativo` (boolean)
+- `id` (uuid, mesmo id do Auth), `usuario` (único, usado no login), `nome`, `papel` (`admin` ou `balconista`), `ativo` (boolean)
 
 **produtos**
 - `id`, `nome`, `categoria` (`Pastéis`, `Bebidas`, `Outros`), `preco` (usado em Bebidas e Outros), `preco_m` e `preco_g` (usados em Pastéis), `ativo`, `criado_em`
@@ -120,7 +120,7 @@ Regras específicas:
 5. A tela mostra o número e o status, que atualiza sozinho (realtime).
 
 **Atendente registra e acompanha**
-1. Entra em `/atendente` com e-mail e senha.
+1. Entra em `/atendente` com usuário e senha.
 2. Pedidos do cliente aparecem na aba Pedidos, com aviso sonoro e destaque.
 3. **Aceita** o pedido: ele muda para `preparando` e a tela do cliente atualiza na hora. Depois marca como `pronto` e `entregue`. O cliente vê cada mudança sem recarregar a página.
 4. Pode cancelar com confirmação. O cancelamento sai do total do dia, mas continua na lista.
@@ -157,10 +157,14 @@ Não é permitido voltar de status. Cancelado não volta. Pedidos de Entrega pas
 
 ## 9. Contas de acesso
 
-- O admin é criado no painel do Supabase (Authentication → Users), com e-mail e senha, e recebe o papel `admin` na tabela `perfis`.
-- Cada balconista recebe conta da mesma forma, com papel `balconista`.
-- Trocar senha: pelo próprio link de recuperação do Supabase.
+- Cada pessoa tem **usuário** e **senha** para entrar. O e-mail é usado só para recuperar a senha.
+- O admin e cada balconista são criados no painel do Supabase (Authentication → Users). Cada conta recebe um e-mail próprio (um por pessoa), e o usuário fica guardado na tabela `perfis`.
+- Papéis: o admin recebe `admin` e cada balconista recebe `balconista`.
+- Login: a tela pede usuário e senha. O app procura o e-mail daquele usuário com uma função do banco que devolve apenas o e-mail do usuário informado (nunca a lista de contas) e então autentica.
+- Esqueci a senha: o link de recuperação vai para o e-mail cadastrado.
+- Trocar senha: pelo próprio link de recuperação.
 - Remover acesso: marcar o perfil como `ativo = false`.
+- Risco aceito: a função de busca de e-mail pelo usuário permite descobrir o e-mail de um usuário conhecido. Para uma pastelaria com poucos funcionários, isso é aceitável e fica registrado aqui.
 
 Isso é manual de propósito nesta versão. Uma tela de cadastro de balconistas exigiria uma função de servidor com a chave privada, o que aumenta o trabalho sem trazer benefício para o uso da pastelaria.
 
