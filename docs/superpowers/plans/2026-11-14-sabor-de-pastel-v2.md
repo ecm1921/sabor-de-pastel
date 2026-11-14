@@ -20,6 +20,9 @@
 - Transições permitidas: `recebido→preparando`, `recebido→cancelado`, `preparando→pronto`, `preparando→cancelado`, `pronto→entregue`. Nenhuma outra.
 - Pastéis têm `preco_m` e `preco_g`. Bebidas e Outros têm `preco`.
 - Login por usuário e senha. E-mail só para recuperar senha.
+- Telefone obrigatório em todo pedido, guardado só com dígitos (DDD + número, 10 ou 11 dígitos). Endereço só em Entrega: rua, número e bairro obrigatórios; complemento e referência opcionais.
+- WhatsApp só por link `https://wa.me/<numero>?text=<texto codificado com encodeURIComponent>`, aberto por toque da pessoa. Número da pastelaria em `VITE_WHATSAPP_LOJA` (ex.: `5511999999999`). Para o cliente: `55` + telefone guardado. Nada de API paga.
+- Comanda para impressora térmica de 80 mm: `@page { size: 80mm auto; margin: 0 }`, largura útil de 72 mm, fonte monoespaçada, impressa com `window.print()`.
 - Papéis: `admin` vê tudo. `balconista` não altera cardápio nem vê log. Visitante não lista pedidos.
 - O front-end usa só `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`. A chave `service_role` nunca entra no repositório nem no build.
 - Rotas com HashRouter (`/#/`, `/#/pedido/:id`, `/#/atendente`), porque o GitHub Pages não reescreve URLs. Base do Vite: `/sabor-de-pastel/`.
@@ -30,7 +33,7 @@
 
 1. **Cliente toca duas vezes em "Enviar" ou a rede demora:** deve existir um único pedido. Teste na Task 10 (`envia uma vez mesmo com dois cliques`).
 2. **Item fica esgotado entre montar o carrinho e enviar:** o banco recusa e a tela diz qual item saiu. Teste SQL na Task 3 (`item inativo é recusado`) e mapeamento de erro na Task 6.
-3. **Admin muda o preço enquanto o cliente monta o carrinho:** vale o preço do banco no envio, e vendas antigas não mudam. Teste SQL na Task 3 (`total usa preço do banco, não o enviado`).
+3. **Telefone digitado de qualquer jeito** (`(11) 98765-4321`, `+55 11 98765 4321`, `11987654321`): todos viram `11987654321`, e o link do WhatsApp sai `wa.me/5511987654321`. Teste na Task 2 (`normaliza telefone em vários formatos`).
 4. **Balconista desativado com sessão aberta:** perde o acesso na próxima ação. Teste SQL na Task 4 (`perfil inativo não altera status`).
 5. **Nome de cliente ou observação com `<script>`, aspas, `;` ou acentos:** aparece como texto, e o CSV não quebra colunas. Teste na Task 11 (`csv escapa ponto e vírgula e quebra de linha`). O React já escapa HTML; não usar `dangerouslySetInnerHTML`.
 
@@ -53,6 +56,8 @@ supabase/tests/*.sql                     testes de acesso e regras (rodam no SQL
 src/domain/tipos.ts               tipos compartilhados
 src/domain/pedido.ts              preço, total, status, rótulos, BRL
 src/domain/resumo.ts              resumo do dia e CSV
+src/domain/whatsapp.ts            telefone, textos e links do WhatsApp
+src/features/atendente/Comanda.tsx  comanda de 80 mm + comanda.css (@media print)
 src/services/supabase.ts          cliente Supabase
 src/services/erros.ts             erro do banco → mensagem em português
 src/services/{produtos,pedidos,log,auth}.ts
@@ -98,19 +103,21 @@ src/App.tsx, src/main.tsx         rotas
 - [ ] **Step 3:** `npm test` → FAIL.
 - [ ] **Step 4:** `App.tsx` com `HashRouter` e uma rota `/` mostrando "Sabor de Pastel". `vite.config.ts` com `base: "/sabor-de-pastel/"` e `test: { environment: "jsdom", setupFiles: "src/setupTests.ts" }`.
 - [ ] **Step 5:** `npm test` → PASS. `npm run build` → cria `dist/index.html` sem erro.
-- [ ] **Step 6:** `deploy.yml`: em push na `main`, `npm ci`, `npm test -- --run`, `npm run build` com `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` vindos de `secrets`, e publica `dist/` com `actions/upload-pages-artifact@v3` + `actions/deploy-pages@v4`. Copiar `legado/` para `dist/legado/` no build.
+- [ ] **Step 6:** `deploy.yml`: em push na `main`, `npm ci`, `npm test -- --run`, `npm run build` com `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` e `VITE_WHATSAPP_LOJA` vindos de `secrets` (os três também em `.env.example`), e publica `dist/` com `actions/upload-pages-artifact@v3` + `actions/deploy-pages@v4`. Copiar `legado/` para `dist/legado/` no build.
 - [ ] **Step 7 (ação do Eduardo):** no GitHub, Settings → Pages → Source: "GitHub Actions".
 - [ ] **Step 8:** commit `chore: projeto Vite e deploy no GitHub Pages`. Depois do push, abrir o link e ver "Sabor de Pastel". O app antigo continua em `/sabor-de-pastel/legado/`.
 
 ### Task 2: Regras de domínio (puras e testadas)
 
 **Files:**
-- Create: `src/domain/tipos.ts`, `src/domain/pedido.ts`
-- Test: `src/domain/pedido.test.ts`
+- Create: `src/domain/tipos.ts`, `src/domain/pedido.ts`, `src/domain/whatsapp.ts`
+- Test: `src/domain/pedido.test.ts`, `src/domain/whatsapp.test.ts`
 
 **Interfaces:**
 - Produces (`tipos.ts`): `Tipo = "Retirada" | "Entrega"`, `Pagamento = "Dinheiro" | "Pix" | "Cartão"`, `Categoria = "Pastéis" | "Bebidas" | "Outros"`, `Status = "recebido" | "preparando" | "pronto" | "entregue" | "cancelado"`, `Tamanho = "M" | "G"`, `Papel = "admin" | "balconista"`, `Produto { id: string; nome: string; categoria: Categoria; preco: number | null; preco_m: number | null; preco_g: number | null; ativo: boolean }`, `ItemCarrinho { produtoId: string; tamanho: Tamanho | null; quantidade: number }`.
 - Produces (`pedido.ts`): `precoUnitario(p: Produto, t: Tamanho | null): number`, `calcularTotal(itens: { precoUnitario: number; quantidade: number }[]): number`, `proximosStatus(s: Status): Status[]`, `rotuloStatus(s: Status, tipo: Tipo): string`, `formatarBRL(v: number): string`.
+- Produces (`tipos.ts`, além dos acima): `Endereco { rua: string; numero: string; bairro: string; complemento: string; referencia: string }`.
+- Produces (`whatsapp.ts`): `normalizarTelefone(t: string): string | null` (só dígitos; tira `55` do começo quando sobram 12 ou 13 dígitos; aceita 10 ou 11; senão `null`), `linkWhatsApp(numeroComDDI: string, texto: string): string`, `mensagemPedidoParaLoja(p: { numero: number; tipo: Tipo; cliente: string; telefone: string; itens: { nome: string; tamanho: Tamanho | null; quantidade: number; precoUnitario: number }[]; total: number; pagamento: Pagamento; observacao: string; endereco: Endereco | null }): string`, `mensagemStatusParaCliente(p: { numero: number; tipo: Tipo }): string`.
 
 - [ ] **Step 1: Testes que falham**, com os valores da spec:
   - `pastel usa preço do tamanho`: Pastel com `preco_m: 15, preco_g: 25` → `precoUnitario(p, "M") === 15`, `"G" === 25`.
@@ -119,6 +126,10 @@ src/App.tsx, src/main.tsx         rotas
   - `transições`: `proximosStatus("recebido")` = `["preparando","cancelado"]`; `"preparando"` = `["pronto","cancelado"]`; `"pronto"` = `["entregue"]`; `"entregue"` e `"cancelado"` = `[]`.
   - `rótulo de pronto depende do tipo`: `rotuloStatus("pronto","Retirada") === "Pronto"`, `rotuloStatus("pronto","Entrega") === "Saiu para entrega"`.
   - `formata reais`: `formatarBRL(15)` corresponde a `/R\$\s15,00/`.
+  - `normaliza telefone em vários formatos`: `"(11) 98765-4321"`, `"+55 11 98765 4321"` e `"11987654321"` → `"11987654321"`; `"1133334444"` → `"1133334444"`; `"98765-4321"` → `null`.
+  - `link do whatsapp codifica o texto`: `linkWhatsApp("5511987654321", "Pedido nº 12\nTotal: R$ 40,00")` → `"https://wa.me/5511987654321?text=Pedido%20n%C2%BA%2012%0ATotal%3A%20R%24%2040%2C00"`.
+  - `mensagem para a loja tem tudo`: contém `"Pedido nº 12"`, `"2x Pastel de Carne (M)"`, o total, o pagamento, o telefone e, em Entrega, `"Rua"`, número e bairro; em Retirada não contém a palavra `"Endereço"`.
+  - `mensagem para o cliente depende do tipo`: Retirada → `"Seu pedido nº 12 está pronto para retirada!"`; Entrega → `"Seu pedido nº 12 saiu para entrega!"`. As duas começam com `"Sabor de Pastel: "`.
 - [ ] **Step 2:** `npx vitest run src/domain` → FAIL.
 - [ ] **Step 3:** implementar. O total é calculado em centavos inteiros (`Math.round(v * 100)`) e dividido por 100 no fim.
 - [ ] **Step 4:** `npx vitest run src/domain` → PASS.
@@ -130,8 +141,8 @@ src/App.tsx, src/main.tsx         rotas
 - Create: `supabase/migrations/0001_schema.sql`, `supabase/migrations/0002_funcoes.sql` (só `criar_pedido` nesta task), `supabase/seed.sql`, `supabase/tests/01_criar_pedido.sql`
 
 **Interfaces:**
-- Produces (tabelas, colunas da spec seção 5): `perfis(id uuid pk references auth.users, usuario text unique not null, nome text not null, papel text check in ('admin','balconista'), ativo boolean default true)`; `produtos(...)`; `pedidos(id uuid default gen_random_uuid(), numero int, dia date default (now() at time zone 'America/Sao_Paulo')::date, cliente text, tipo text, pagamento text, observacao text, status text default 'recebido', total numeric(10,2), criado_em timestamptz default now(), atualizado_por uuid references perfis)`; `itens_pedido(..., produto_id references produtos on delete restrict, nome_snapshot, tamanho, quantidade int check between 1 and 50, preco_unitario numeric(10,2))`; `log_acoes(...)`; `contador_dia(dia date pk, ultimo int)`. Checks nas colunas de texto com os valores das Global Constraints.
-- Produces (função): `criar_pedido(p_tipo text, p_pagamento text, p_cliente text, p_observacao text, p_itens jsonb) returns table(id uuid, numero int)`, `security definer`, `execute` para `anon` e `authenticated`. `p_itens` = `[{"produto_id": "...", "tamanho": "M"|null, "quantidade": 2}]`. Erros com `raise exception` e mensagens fixas: `ITENS_VAZIOS`, `ITEM_INDISPONIVEL:<nome>`, `TAMANHO_INVALIDO:<nome>`, `QUANTIDADE_INVALIDA`.
+- Produces (tabelas, colunas da spec seção 5): `perfis(id uuid pk references auth.users, usuario text unique not null, nome text not null, papel text check in ('admin','balconista'), ativo boolean default true)`; `produtos(...)`; `pedidos(id uuid default gen_random_uuid(), numero int, dia date default (now() at time zone 'America/Sao_Paulo')::date, cliente text, tipo text, pagamento text, observacao text, telefone text not null check (telefone ~ '^[0-9]{10,11}$'), endereco_rua text, endereco_numero text, endereco_bairro text, endereco_complemento text, endereco_referencia text, status text default 'recebido', total numeric(10,2), criado_em timestamptz default now(), atualizado_por uuid references perfis)`; `itens_pedido(..., produto_id references produtos on delete restrict, nome_snapshot, tamanho, quantidade int check between 1 and 50, preco_unitario numeric(10,2))`; `log_acoes(...)`; `contador_dia(dia date pk, ultimo int)`. Checks nas colunas de texto com os valores das Global Constraints.
+- Produces (função): `criar_pedido(p_tipo text, p_pagamento text, p_cliente text, p_observacao text, p_telefone text, p_endereco jsonb, p_itens jsonb) returns table(id uuid, numero int)`, `security definer`, `execute` para `anon` e `authenticated`. `p_itens` = `[{"produto_id": "...", "tamanho": "M"|null, "quantidade": 2}]`. `p_endereco` = `{"rua","numero","bairro","complemento","referencia"}` ou `null`; é ignorado em Retirada. Erros com `raise exception` e mensagens fixas: `ITENS_VAZIOS`, `ITEM_INDISPONIVEL:<nome>`, `TAMANHO_INVALIDO:<nome>`, `QUANTIDADE_INVALIDA`, `TELEFONE_INVALIDO`, `ENDERECO_INCOMPLETO`.
 
 - [ ] **Step 1 (ação do Eduardo):** criar dois projetos no supabase.com (região São Paulo): `sabor-de-pastel-teste` e `sabor-de-pastel` (produção), conforme a spec seção 12. Todos os testes SQL rodam no de teste. As migrations são aplicadas nos dois. A URL e a chave `anon` do de teste vão para `.env.local` (que fica no `.gitignore`). As de produção vão para os secrets do GitHub.
 - [ ] **Step 2: Testes que falham** em `01_criar_pedido.sql`, cada caso num bloco `do $$ ... $$` dentro de `begin; ... rollback;`, que lança `exception` se a condição falhar e termina com `select 'OK'`:
@@ -141,6 +152,9 @@ src/App.tsx, src/main.tsx         rotas
   - `item inativo é recusado` → mensagem começa com `ITEM_INDISPONIVEL:`.
   - `pastel sem tamanho é recusado` → `TAMANHO_INVALIDO:`.
   - `lista vazia é recusada` → `ITENS_VAZIOS`.
+  - `telefone com 9 dígitos é recusado` → `TELEFONE_INVALIDO`.
+  - `entrega sem bairro é recusada` → `ENDERECO_INCOMPLETO`.
+  - `retirada ignora endereço`: Retirada com `p_endereco` preenchido grava as colunas de endereço como nulas.
 - [ ] **Step 3:** rodar no SQL Editor → erro (função não existe).
 - [ ] **Step 4:** escrever `0001_schema.sql`, `seed.sql` (os 8 itens do app antigo com os mesmos preços) e `criar_pedido`. Numeração: `insert into contador_dia ... on conflict (dia) do update set ultimo = contador_dia.ultimo + 1 returning ultimo`, o que é atômico. Pedido e itens no mesmo comando da função (tudo ou nada). `atualizado_por = auth.uid()` (nulo para visitante).
 - [ ] **Step 5:** aplicar as migrations e rodar o teste → `OK`.
@@ -153,7 +167,7 @@ src/App.tsx, src/main.tsx         rotas
 - Test: `supabase/tests/02_acesso.sql`
 
 **Interfaces:**
-- Produces: `papel_atual() returns text` (papel do perfil ativo de `auth.uid()`, ou nulo); `email_do_usuario(p_usuario text) returns text` (`security definer`, `anon`; nulo se não existir ou inativo); `obter_pedido_cliente(p_id uuid) returns jsonb` com `{numero, tipo, status, total, criado_em, itens:[{nome, tamanho, quantidade, preco_unitario}]}` (`security definer`, `anon`).
+- Produces: `papel_atual() returns text` (papel do perfil ativo de `auth.uid()`, ou nulo); `email_do_usuario(p_usuario text) returns text` (`security definer`, `anon`; nulo se não existir ou inativo); `obter_pedido_cliente(p_id uuid) returns jsonb` com `{numero, tipo, status, total, criado_em, cliente, telefone, pagamento, observacao, endereco: {rua, numero, bairro, complemento, referencia} | null, itens:[{nome, tamanho, quantidade, preco_unitario}]}` (o cliente só vê os próprios dados, porque precisa do `id`) (`security definer`, `anon`).
 - Políticas (spec seção 6): `produtos` select para anon só `ativo`; select total para quem tem papel; insert/update/delete só `papel_atual() = 'admin'`. `pedidos` e `itens_pedido` select só com papel; sem insert direto (só via `criar_pedido`); update de status só via `alterar_status` (Task 5). `log_acoes` select só admin, sem insert/update/delete pelo cliente. `perfis` select do próprio registro, e admin vê todos.
 
 - [ ] **Step 1: Testes que falham** em `02_acesso.sql`, simulando cada papel com `set local role anon|authenticated` e `set local request.jwt.claims = '{"sub":"<uuid>"}'`:
@@ -204,7 +218,7 @@ src/App.tsx, src/main.tsx         rotas
 - Consumes: funções SQL das Tasks 3 a 5; tipos da Task 2.
 - Produces:
   - `produtos.ts`: `listarCardapio(): Promise<Produto[]>` (só ativos), `listarProdutos(): Promise<Produto[]>`, `salvarProduto(p: Omit<Produto,"id"> & { id?: string }): Promise<Produto>`, `definirAtivo(id: string, ativo: boolean): Promise<void>`, `excluirProduto(id: string): Promise<"excluido" | "desativado">` (se o banco recusar por FK `23503`, marca inativo e devolve `"desativado"`).
-  - `pedidos.ts`: `criarPedido(input: { tipo: Tipo; pagamento: Pagamento; cliente: string; observacao: string; itens: ItemCarrinho[] }): Promise<{ id: string; numero: number }>`, `obterPedidoCliente(id: string): Promise<PedidoCliente | null>`, `listarPedidosDoDia(dia: string): Promise<Pedido[]>`, `alterarStatus(id: string, novo: Status): Promise<void>`, `assinarPedidosDoDia(dia: string, aoMudar: () => void): () => void`, `assinarStatusDoPedido(id: string, aoMudar: (s: Status) => void): () => void` (canal de broadcast `pedido:<id>`, mais consulta a cada 15 s como reserva).
+  - `pedidos.ts`: `criarPedido(input: { tipo: Tipo; pagamento: Pagamento; cliente: string; observacao: string; telefone: string; endereco: Endereco | null; itens: ItemCarrinho[] }): Promise<{ id: string; numero: number }>` (o `telefone` já chega normalizado), `obterPedidoCliente(id: string): Promise<PedidoCliente | null>`, `listarPedidosDoDia(dia: string): Promise<Pedido[]>`, `alterarStatus(id: string, novo: Status): Promise<void>`, `assinarPedidosDoDia(dia: string, aoMudar: () => void): () => void`, `assinarStatusDoPedido(id: string, aoMudar: (s: Status) => void): () => void` (canal de broadcast `pedido:<id>`, mais consulta a cada 15 s como reserva).
   - `log.ts`: `listarLog(f: { dia?: string; perfilId?: string }): Promise<LogAcao[]>`.
   - `auth.ts`: `entrar(usuario: string, senha: string): Promise<Perfil>`, `sair(): Promise<void>`, `recuperarSenha(usuario: string): Promise<void>`, `perfilAtual(): Promise<Perfil | null>`.
   - `erros.ts`: `mensagemDeErro(e: unknown): string`.
@@ -214,6 +228,8 @@ src/App.tsx, src/main.tsx         rotas
   - `ITEM_INDISPONIVEL:Pastel de Carne` → `"Pastel de Carne acabou. Tire do carrinho e tente de novo."`
   - `TRANSICAO_INVALIDA` → `"Esse pedido já mudou de situação. Atualize a lista."`
   - `SEM_PERMISSAO` → `"Você não tem permissão para isso."`
+  - `TELEFONE_INVALIDO` → `"Confira o telefone com DDD."`
+  - `ENDERECO_INCOMPLETO` → `"Preencha rua, número e bairro para a entrega."`
   - `Invalid login credentials` → `"Usuário ou senha incorretos."`
   - `TypeError: Failed to fetch` → `"Sem conexão. Tente de novo."`
   - qualquer outro → `"Algo deu errado. Tente de novo."` (nunca mostra a mensagem do banco)
@@ -258,8 +274,8 @@ src/App.tsx, src/main.tsx         rotas
 ### Task 9: Atendente: novo pedido e fila de pedidos em tempo real
 
 **Files:**
-- Create: `src/features/cliente/carrinho.ts`, `src/features/atendente/AtendenteLayout.tsx`, `NovoPedido.tsx`, `Pedidos.tsx`, `som.ts`
-- Test: `src/features/cliente/carrinho.test.ts`, `src/features/atendente/Pedidos.test.tsx`
+- Create: `src/features/cliente/carrinho.ts`, `src/features/atendente/AtendenteLayout.tsx`, `NovoPedido.tsx`, `Pedidos.tsx`, `Comanda.tsx`, `comanda.css`, `som.ts`
+- Test: `src/features/cliente/carrinho.test.ts`, `src/features/atendente/Pedidos.test.tsx`, `src/features/atendente/Comanda.test.tsx`
 
 **Interfaces:**
 - Consumes: `listarCardapio`, `criarPedido`, `listarPedidosDoDia`, `alterarStatus`, `assinarPedidosDoDia`, `proximosStatus`, `rotuloStatus`, componentes da Task 7.
@@ -272,7 +288,12 @@ src/App.tsx, src/main.tsx         rotas
   - `pedido pronto mostra "Entregue"`.
   - `cancelar pede confirmação antes de chamar alterarStatus(id, "cancelado")`.
   - `pedido novo vindo do tempo real toca aviso e fica destacado`.
-- [ ] **Step 2:** rodar → FAIL. Implementar. Filtros: Todos, Novos, Em andamento, Concluídos. Os botões de status seguem `proximosStatus`. Rodar → PASS.
+  - `pedido pronto mostra "Avisar no WhatsApp"` com `href` igual a `linkWhatsApp("55" + telefone, mensagemStatusParaCliente(...))` e `target="_blank"`; pedidos em outros status não mostram o botão.
+  - `card de Entrega mostra telefone e endereço completo`.
+  - `Comanda mostra número, data e hora, tipo, itens com tamanho, total, pagamento, observação, telefone`, e o endereço só em Entrega.
+  - `"Imprimir" renderiza a comanda e chama window.print` (`vi.spyOn(window, "print")`).
+- [ ] **Step 2:** rodar → FAIL. Implementar. Filtros: Todos, Novos, Em andamento, Concluídos. Os botões de status seguem `proximosStatus`. O Novo pedido do balcão pede telefone e, em Entrega, o endereço, com as mesmas regras da tela do cliente. A comanda fica num elemento escondido na tela e só aparece na impressão (`comanda.css` com `@media print` esconde o resto da página). Rodar → PASS.
+- [ ] **Step 2b (com a impressora da pastelaria):** imprimir um pedido de Entrega e conferir se a largura cabe nos 80 mm sem cortar texto. Ajustar a fonte se precisar.
 - [ ] **Step 3:** teste com dois navegadores: um pedido feito em um aparece no outro em menos de 3 s.
 - [ ] **Step 4:** commit `feat: atendente com novo pedido e fila em tempo real`.
 
@@ -291,7 +312,10 @@ src/App.tsx, src/main.tsx         rotas
   - `campo armadilha preenchido não envia`: o campo invisível `site` preenchido → `criarPedido` não é chamado, mas a tela mostra o sucesso normalmente.
   - `erro de item esgotado mantém o carrinho e mostra a mensagem`.
   - `após enviar, vai para /pedido/:id e guarda o id`.
-- [ ] **Step 2:** rodar → FAIL. Implementar. Cardápio por categoria, M/G nos pastéis, carrinho fixo embaixo com total, formulário com nome (opcional), Retirada/Entrega, pagamento e observação. A tela de acompanhamento mostra número, itens, total e uma linha do tempo com os rótulos do tipo. O status muda sozinho por `assinarStatusDoPedido`. Rodar → PASS.
+  - `entrega mostra campos de endereço e retirada não`.
+  - `não envia sem telefone válido ou, em Entrega, sem rua, número e bairro` (mostra a mensagem perto do campo e não chama `criarPedido`).
+  - `tela do pedido mostra "Enviar pelo WhatsApp"` com `href` igual a `linkWhatsApp(VITE_WHATSAPP_LOJA, mensagemPedidoParaLoja(...))`.
+- [ ] **Step 2:** rodar → FAIL. Implementar. Cardápio por categoria, M/G nos pastéis, carrinho fixo embaixo com total, formulário com nome (opcional), telefone (obrigatório, teclado numérico com `inputMode="tel"`), Retirada/Entrega, endereço quando for Entrega, pagamento e observação. O cliente digita o telefone e o endereço uma vez: eles ficam salvos no aparelho (`sabor.meusDados`, com `try/catch`) para o próximo pedido. A tela de acompanhamento mostra número, itens, total e uma linha do tempo com os rótulos do tipo. O status muda sozinho por `assinarStatusDoPedido`. Rodar → PASS.
 - [ ] **Step 3:** publicar (push). No celular, fazer um pedido, aceitar no computador e ver "Preparando" aparecer no celular sem recarregar.
 - [ ] **Step 4:** commit `feat: área do cliente com pedido e acompanhamento`. **A partir daqui a pastelaria já pode usar o app (21/11).**
 

@@ -38,12 +38,17 @@ Motivação: a pastelaria real (da namorada do autor) vai usar o app para o Proj
 - Log de ações com quem, quando e o quê.
 - Atualização em tempo real: pedido novo aparece na tela do atendente sem recarregar.
 - Exportação do resumo do dia em CSV (já existe hoje).
+- Telefone do cliente (obrigatório em todos os pedidos) e endereço nos pedidos de Entrega: rua, número e bairro obrigatórios; complemento e ponto de referência opcionais.
+- WhatsApp sem custo, por link `wa.me` com a mensagem já escrita (a pessoa só toca em Enviar):
+  - **Cliente → pastelaria:** depois de enviar o pedido, o cliente toca em "Enviar pelo WhatsApp" e o pedido completo chega no número da pastelaria.
+  - **Atendente → cliente:** quando o pedido fica `pronto`, o atendente toca em "Avisar no WhatsApp" e abre uma mensagem para o telefone do cliente ("Seu pedido nº 12 está pronto para retirada" ou "Seu pedido nº 12 saiu para entrega").
+- Impressão de comanda em impressora térmica de 80 mm, com botão "Imprimir" em cada pedido.
 
 **Fora do escopo (pode entrar depois):**
 - Pagamento online (Pix e cartão são só registro).
-- Entrega com endereço, taxa e rota.
-- Impressão de pedido e controle de estoque.
-- Notificação por WhatsApp ou push.
+- Taxa de entrega e rota.
+- Controle de estoque.
+- Envio **automático** de WhatsApp (exige a API paga do WhatsApp Business) e notificação push.
 - Cadastro de balconistas feito pela própria tela do admin (nesta versão, o admin cria as contas no painel do Supabase, descrito na seção 9).
 - Migração dos dados do app antigo (que ficam no navegador). O cardápio inicial é recriado a partir da lista de exemplo.
 - Modo offline.
@@ -82,7 +87,7 @@ supabase/
 - `id`, `nome`, `categoria` (`Pastéis`, `Bebidas`, `Outros`), `preco` (usado em Bebidas e Outros), `preco_m` e `preco_g` (usados em Pastéis), `ativo`, `criado_em`
 
 **pedidos**
-- `id` (uuid aleatório, gerado no banco; o aparelho do cliente guarda esse código para acompanhar o pedido), `numero` (sequencial por dia, gerado no banco), `dia` (data), `cliente` (texto livre, opcional), `tipo` (`Retirada` ou `Entrega`), `pagamento` (`Dinheiro`, `Pix`, `Cartão`), `observacao`, `status` (`recebido`, `preparando`, `pronto`, `entregue`, `cancelado`), `total` (calculado no banco), `criado_em`, `atualizado_por` (id do perfil, se foi o balconista)
+- `id` (uuid aleatório, gerado no banco; o aparelho do cliente guarda esse código para acompanhar o pedido), `numero` (sequencial por dia, gerado no banco), `dia` (data), `cliente` (texto livre, opcional), `tipo` (`Retirada` ou `Entrega`), `pagamento` (`Dinheiro`, `Pix`, `Cartão`), `observacao`, `telefone` (só dígitos, com DDD, 10 ou 11 dígitos), `endereco_rua`, `endereco_numero`, `endereco_bairro`, `endereco_complemento`, `endereco_referencia` (os de endereço só são preenchidos em Entrega), `status` (`recebido`, `preparando`, `pronto`, `entregue`, `cancelado`), `total` (calculado no banco), `criado_em`, `atualizado_por` (id do perfil, se foi o balconista)
 
 **itens_pedido**
 - `id`, `pedido_id`, `produto_id`, `nome_snapshot` (nome no momento da venda), `tamanho` (`M`, `G` ou nulo), `quantidade`, `preco_unitario` (snapshot)
@@ -117,22 +122,21 @@ Regras específicas:
 2. Monta o carrinho. Os totais aparecem na tela, mas quem calcula é o banco.
 3. Informa nome (opcional), tipo e forma de pagamento.
 4. Envia. O banco cria o pedido com status `recebido` e devolve o número.
-5. A tela mostra o número e o status, que atualiza sozinho (realtime).
+5. A tela mostra o número e o status, que atualiza sozinho (realtime), e o botão **"Enviar pelo WhatsApp"**. Ao tocar, abre o WhatsApp do cliente com o pedido completo (número, itens, total, pagamento, observação, telefone e endereço) endereçado ao número da pastelaria. O pedido já está gravado no sistema antes disso; o WhatsApp é um aviso a mais, não a única via.
 
 **Atendente registra e acompanha**
 1. Entra em `/atendente` com usuário e senha.
 2. Pedidos do cliente aparecem na aba Pedidos, com aviso sonoro e destaque.
 3. **Aceita** o pedido: ele muda para `preparando` e a tela do cliente atualiza na hora. Depois marca como `pronto` e `entregue`. O cliente vê cada mudança sem recarregar a página.
 4. Pode cancelar com confirmação. O cancelamento sai do total do dia, mas continua na lista.
+4a. Em qualquer pedido, toca em **"Imprimir"** para sair a comanda na impressora térmica (80 mm): nome da pastelaria, número, data e hora, tipo, itens com tamanho e quantidade, total, pagamento, observação, telefone e, se for Entrega, o endereço completo.
+4b. Quando o pedido está `pronto`, aparece **"Avisar no WhatsApp"**, que abre a mensagem para o telefone do cliente.
 5. Pode criar pedido pela aba Novo pedido (mesma tela que existe hoje), para quem chega ao balcão. Esse pedido é marcado como Retirada ou Entrega, como os pedidos do cliente.
 
 **Admin**
 - Tudo do balconista, mais: cardápio (criar, editar preço, marcar esgotado, excluir), resumo com filtro por dia, log de ações com filtro por balconista e data.
 
 **Status do pedido**
-
-```
-```
 
 Os nomes que o cliente vê dependem do tipo do pedido:
 
@@ -149,6 +153,11 @@ Não é permitido voltar de status. Cancelado não volta. Pedidos de Entrega pas
 ## 8. Tratamento de erro e casos de borda
 
 - Falha de rede no envio do pedido: a tela mantém o carrinho e mostra "Não foi possível enviar. Tente de novo." Nada é gravado parcialmente.
+- Telefone digitado com espaços, parênteses, traço ou `+55`: o app guarda só os dígitos com DDD. Menos de 10 ou mais de 11 dígitos: a tela pede para corrigir, e o banco também recusa.
+- Entrega sem rua, número ou bairro: a tela não deixa enviar, e o banco também recusa.
+- WhatsApp não instalado (computador): o link `wa.me` abre o WhatsApp Web.
+- O link do WhatsApp só abre por toque da pessoa (nunca sozinho), porque os navegadores de celular bloqueiam janelas abertas sem toque.
+- Impressão: o navegador abre a janela de impressão já com o layout de 80 mm. A impressora térmica precisa estar instalada no computador ou celular do balcão.
 - Item esgotado depois de entrar no carrinho: o banco recusa o pedido e a tela avisa qual item saiu do cardápio.
 - Dois pedidos ao mesmo tempo: a numeração do dia é gerada dentro de uma transação no banco, então não repete.
 - Pedido falso de cliente (spam): o campo de armadilha (honeypot) bloqueia robôs simples. O atendente pode cancelar. Limite de pedidos por IP não é possível só no front-end; isso fica como risco aceito.
@@ -183,7 +192,7 @@ Direção: **quente, de cozinha de bairro, com cara de marca própria**, não ca
 
 ## 11. Testes e verificação
 
-- **Testes automáticos (Vitest):** total do pedido, preço M/G, numeração do dia, formatação em reais, transições de status válidas e inválidas.
+- **Testes automáticos (Vitest):** total do pedido, preço M/G, numeração do dia, formatação em reais, transições de status válidas e inválidas, limpeza do telefone, texto e link das mensagens de WhatsApp, conteúdo da comanda.
 - **Testes de acesso (SQL):** scripts em `supabase/tests` que tentam, com cada papel, ler, criar, alterar e apagar. O esperado está escrito em cada caso. Visitante não lista pedidos. Balconista não vê log. Cliente não cria pedido com status diferente de `recebido`.
 - **Testes manuais:** roteiro com 10 passos (fazer pedido pelo celular, ver aparecer no computador do balcão, mudar status, cancelar, criar item, esgotar item, ver log, sair e entrar com outro balconista).
 - **Teste real:** uma semana de uso na pastelaria antes da entrega, com anotação de problemas. Vira a etapa de "Verificação" do PDCA no relatório.
@@ -192,7 +201,7 @@ Direção: **quente, de cozinha de bairro, com cara de marca própria**, não ca
 
 - Repositório no GitHub com GitHub Actions para build e publicação no Pages.
 - Projeto Supabase separado para produção e um para testes.
-- Variáveis de ambiente: `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`.
+- Variáveis de ambiente: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` e `VITE_WHATSAPP_LOJA` (número da pastelaria com DDI e DDD, só dígitos, ex.: `5511999999999`).
 - README com: o que é o app, prints, como rodar localmente, como criar contas, como as regras de acesso funcionam, e a meta dos ODS escolhida (8.3).
 
 ## 13. Critérios de sucesso
