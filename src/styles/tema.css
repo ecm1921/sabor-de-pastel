@@ -107,8 +107,32 @@ textarea {
   padding: var(--gutter) var(--gutter) 140px;
 }
 
+.conteudo--estreito {
+  max-width: 420px;
+}
+
 .suave {
   color: var(--texto-suave);
+}
+
+.link {
+  background: none;
+  border: 0;
+  padding: 10px 0;
+  min-height: var(--toque);
+  color: var(--massa);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.topo__link {
+  color: var(--creme);
+  font-weight: 600;
+  min-height: var(--toque);
+  display: inline-flex;
+  align-items: center;
 }
 
 .preco {
