@@ -40,13 +40,13 @@ Para cada pessoa (admin e cada balconista):
 
 ```sql
 insert into perfis (id, usuario, nome, papel)
-values ('COLE-O-UID-AQUI', 'joao', 'João', 'balconista');
+values ('COLE-O-UID-AQUI', 'joao.sabordepastel', 'João', 'balconista');
 ```
 
-- `usuario`: o que a pessoa digita no login. Use só letras minúsculas, números, ponto, traço ou sublinhado (de 3 a 30 caracteres).
+- `usuario`: o que a pessoa digita no login. O padrão da loja é **primeironome.sabordepastel**, sem acento nem ç (`joao`, não `joão`). O primeiro nome pode ter até 16 letras, porque o usuário inteiro tem no máximo 30 caracteres.
 - `papel`: `admin` ou `balconista`.
 
-Para tirar o acesso de alguém: `update perfis set ativo = false where usuario = 'joao';`
+Para tirar o acesso de alguém: `update perfis set ativo = false where usuario = 'joao.sabordepastel';`
 
 **Link de recuperação de senha** (para funcionar mesmo se a pessoa abrir o e-mail em outro aparelho):
 
