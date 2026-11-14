@@ -102,3 +102,47 @@ end $$;
 
 revoke execute on function criar_pedido(text, text, text, text, text, jsonb, jsonb) from public;
 grant execute on function criar_pedido(text, text, text, text, text, jsonb, jsonb) to anon, authenticated;
+
+-- Papel do usuário logado ('admin' ou 'balconista'), ou nulo se não tem perfil ativo.
+create function papel_atual() returns text
+language sql stable security definer set search_path = public as $$
+  select papel from perfis where id = auth.uid() and ativo
+$$;
+
+-- Login por usuário: devolve o e-mail daquele usuário (só dele), para o app autenticar.
+-- Usuário inexistente ou desativado devolve nulo.
+create function email_do_usuario(p_usuario text) returns text
+language sql stable security definer set search_path = public, auth as $$
+  select u.email
+  from perfis p join auth.users u on u.id = p.id
+  where p.usuario = lower(trim(p_usuario)) and p.ativo
+$$;
+
+-- O cliente acompanha o próprio pedido pelo id (uuid aleatório que só o aparelho dele conhece).
+create function obter_pedido_cliente(p_id uuid) returns jsonb
+language sql stable security definer set search_path = public as $$
+  select jsonb_build_object(
+    'id', p.id,
+    'numero', p.numero,
+    'tipo', p.tipo,
+    'status', p.status,
+    'total', p.total,
+    'criado_em', p.criado_em,
+    'cliente', p.cliente,
+    'telefone', p.telefone,
+    'pagamento', p.pagamento,
+    'observacao', p.observacao,
+    'endereco', case when p.tipo = 'Entrega' then jsonb_build_object(
+      'rua', p.endereco_rua, 'numero', p.endereco_numero, 'bairro', p.endereco_bairro,
+      'complemento', p.endereco_complemento, 'referencia', p.endereco_referencia) else 'null'::jsonb end,
+    'itens', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'nome', i.nome_snapshot, 'tamanho', i.tamanho, 'quantidade', i.quantidade,
+        'preco_unitario', i.preco_unitario) order by i.nome_snapshot)
+      from itens_pedido i where i.pedido_id = p.id), '[]'::jsonb))
+  from pedidos p where p.id = p_id
+$$;
+
+grant execute on function papel_atual() to anon, authenticated;
+grant execute on function email_do_usuario(text) to anon, authenticated;
+grant execute on function obter_pedido_cliente(uuid) to anon, authenticated;
