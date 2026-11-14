@@ -117,7 +117,7 @@ src/App.tsx, src/main.tsx         rotas
 - Produces (`tipos.ts`): `Tipo = "Retirada" | "Entrega"`, `Pagamento = "Dinheiro" | "Pix" | "Cartão"`, `Categoria = "Pastéis" | "Bebidas" | "Outros"`, `Status = "recebido" | "preparando" | "pronto" | "entregue" | "cancelado"`, `Tamanho = "M" | "G"`, `Papel = "admin" | "balconista"`, `Produto { id: string; nome: string; categoria: Categoria; preco: number | null; preco_m: number | null; preco_g: number | null; ativo: boolean }`, `ItemCarrinho { produtoId: string; tamanho: Tamanho | null; quantidade: number }`.
 - Produces (`pedido.ts`): `precoUnitario(p: Produto, t: Tamanho | null): number`, `calcularTotal(itens: { precoUnitario: number; quantidade: number }[]): number`, `proximosStatus(s: Status): Status[]`, `rotuloStatus(s: Status, tipo: Tipo): string`, `formatarBRL(v: number): string`.
 - Produces (`tipos.ts`, além dos acima): `Endereco { rua: string; numero: string; bairro: string; complemento: string; referencia: string }`.
-- Produces (`whatsapp.ts`): `normalizarTelefone(t: string): string | null` (só dígitos; tira `55` do começo quando sobram 12 ou 13 dígitos; aceita 10 ou 11; senão `null`), `linkWhatsApp(numeroComDDI: string, texto: string): string`, `mensagemPedidoParaLoja(p: { numero: number; tipo: Tipo; cliente: string; telefone: string; itens: { nome: string; tamanho: Tamanho | null; quantidade: number; precoUnitario: number }[]; total: number; pagamento: Pagamento; observacao: string; endereco: Endereco | null }): string`, `mensagemStatusParaCliente(p: { numero: number; tipo: Tipo }): string`.
+- Produces (`whatsapp.ts`): `normalizarTelefone(t: string): string | null` (só dígitos; tira `55` do começo quando sobram 12 ou 13 dígitos; aceita 10 ou 11; senão `null`), `linkWhatsApp(numeroComDDI: string, texto: string): string`, `mensagemPedidoParaLoja(p: { numero: number; tipo: Tipo; cliente: string; telefone: string; itens: { nome: string; tamanho: Tamanho | null; quantidade: number; precoUnitario: number }[]; total: number; pagamento: Pagamento; observacao: string; endereco: Endereco | null }): string`, `mensagemStatusParaCliente(tipo: Tipo): string`.
 
 - [ ] **Step 1: Testes que falham**, com os valores da spec:
   - `pastel usa preço do tamanho`: Pastel com `preco_m: 15, preco_g: 25` → `precoUnitario(p, "M") === 15`, `"G" === 25`.
@@ -129,7 +129,7 @@ src/App.tsx, src/main.tsx         rotas
   - `normaliza telefone em vários formatos`: `"(11) 98765-4321"`, `"+55 11 98765 4321"` e `"11987654321"` → `"11987654321"`; `"1133334444"` → `"1133334444"`; `"98765-4321"` → `null`.
   - `link do whatsapp codifica o texto`: `linkWhatsApp("5511987654321", "Pedido nº 12\nTotal: R$ 40,00")` → `"https://wa.me/5511987654321?text=Pedido%20n%C2%BA%2012%0ATotal%3A%20R%24%2040%2C00"`.
   - `mensagem para a loja tem tudo`: contém `"Pedido nº 12"`, `"2x Pastel de Carne (M)"`, o total, o pagamento, o telefone e, em Entrega, `"Rua"`, número e bairro; em Retirada não contém a palavra `"Endereço"`.
-  - `mensagem para o cliente depende do tipo`: Retirada → `"Seu pedido nº 12 está pronto para retirada!"`; Entrega → `"Seu pedido nº 12 saiu para entrega!"`. As duas começam com `"Sabor de Pastel: "`.
+  - `mensagem para o cliente depende do tipo`: `mensagemStatusParaCliente("Retirada") === "Seu pedido está pronto para retirada"`; `mensagemStatusParaCliente("Entrega") === "Seu pedido saiu para entrega"`. Sem número do pedido.
 - [ ] **Step 2:** `npx vitest run src/domain` → FAIL.
 - [ ] **Step 3:** implementar. O total é calculado em centavos inteiros (`Math.round(v * 100)`) e dividido por 100 no fim.
 - [ ] **Step 4:** `npx vitest run src/domain` → PASS.
@@ -288,7 +288,7 @@ src/App.tsx, src/main.tsx         rotas
   - `pedido pronto mostra "Entregue"`.
   - `cancelar pede confirmação antes de chamar alterarStatus(id, "cancelado")`.
   - `pedido novo vindo do tempo real toca aviso e fica destacado`.
-  - `pedido pronto mostra "Avisar no WhatsApp"` com `href` igual a `linkWhatsApp("55" + telefone, mensagemStatusParaCliente(...))` e `target="_blank"`; pedidos em outros status não mostram o botão.
+  - `pedido pronto mostra "Avisar no WhatsApp"` com `href` igual a `linkWhatsApp("55" + telefone, mensagemStatusParaCliente(tipo))` e `target="_blank"`; pedidos em outros status não mostram o botão.
   - `card de Entrega mostra telefone e endereço completo`.
   - `Comanda mostra número, data e hora, tipo, itens com tamanho, total, pagamento, observação, telefone`, e o endereço só em Entrega.
   - `"Imprimir" renderiza a comanda e chama window.print` (`vi.spyOn(window, "print")`).

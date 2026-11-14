@@ -41,7 +41,7 @@ Motivação: a pastelaria real (da namorada do autor) vai usar o app para o Proj
 - Telefone do cliente (obrigatório em todos os pedidos) e endereço nos pedidos de Entrega: rua, número e bairro obrigatórios; complemento e ponto de referência opcionais.
 - WhatsApp sem custo, por link `wa.me` com a mensagem já escrita (a pessoa só toca em Enviar):
   - **Cliente → pastelaria:** depois de enviar o pedido, o cliente toca em "Enviar pelo WhatsApp" e o pedido completo chega no número da pastelaria.
-  - **Atendente → cliente:** quando o pedido fica `pronto`, o atendente toca em "Avisar no WhatsApp" e abre uma mensagem para o telefone do cliente ("Seu pedido nº 12 está pronto para retirada" ou "Seu pedido nº 12 saiu para entrega").
+  - **Atendente → cliente:** quando o pedido fica `pronto`, o atendente toca em "Avisar no WhatsApp" e abre uma mensagem para o telefone do cliente ("Seu pedido está pronto para retirada" ou "Seu pedido saiu para entrega", sem número do pedido).
 - Impressão de comanda em impressora térmica de 80 mm, com botão "Imprimir" em cada pedido.
 
 **Fora do escopo (pode entrar depois):**
