@@ -92,10 +92,17 @@ begin
     raise exception 'FALHOU [cancelar grava pedido_cancelado]';
   end if;
   -- Aviso em tempo real para o cliente (só no ambiente local de teste, onde realtime.send é simulado).
-  if to_regclass('realtime.mensagens_teste') is not null and not exists (
-      select 1 from realtime.mensagens_teste
-      where topico = 'pedido:' || current_setting('teste.p1') and evento = 'status' and payload ->> 'status' = 'pronto') then
-    raise exception 'FALHOU [mudança de status avisa o canal do pedido]';
+  -- Consulta dinâmica (execute): no Supabase real a tabela não existe e o bloco é pulado sem erro.
+  if to_regclass('realtime.mensagens_teste') is not null then
+    declare v_avisou boolean;
+    begin
+      execute format(
+        'select exists (select 1 from realtime.mensagens_teste where topico = %L and evento = %L and payload ->> %L = %L)',
+        'pedido:' || current_setting('teste.p1'), 'status', 'status', 'pronto') into v_avisou;
+      if not v_avisou then
+        raise exception 'FALHOU [mudança de status avisa o canal do pedido]';
+      end if;
+    end;
   end if;
 end $$;
 
