@@ -4,6 +4,7 @@ import { useAuth } from "../../auth/AuthProvider";
 import { RequireAuth } from "../../auth/RequireAuth";
 import { Pedidos } from "./Pedidos";
 import { NovoPedido } from "./NovoPedido";
+import { Resumo } from "./Resumo";
 
 interface Aba {
   caminho: string;
@@ -18,7 +19,7 @@ const EM_BREVE = <p className="vazio">Esta parte chega na próxima versão do ap
 export const ABAS: Aba[] = [
   { caminho: "pedidos", rotulo: "Pedidos", tela: <Pedidos /> },
   { caminho: "novo", rotulo: "Novo pedido", tela: <NovoPedido /> },
-  { caminho: "resumo", rotulo: "Resumo", tela: EM_BREVE },
+  { caminho: "resumo", rotulo: "Resumo", tela: <Resumo /> },
   { caminho: "cardapio", rotulo: "Cardápio", so_admin: true, tela: EM_BREVE },
   { caminho: "log", rotulo: "Log", so_admin: true, tela: EM_BREVE },
 ];
