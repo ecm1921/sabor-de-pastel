@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizarTelefone, linkWhatsApp, mensagemPedidoParaLoja, mensagemStatusParaCliente } from "./whatsapp";
+import { normalizarTelefone, formatarTelefone, linkWhatsApp, mensagemPedidoParaLoja, mensagemStatusParaCliente } from "./whatsapp";
 
 it("normaliza telefone em vários formatos", () => {
   expect(normalizarTelefone("(11) 98765-4321")).toBe("11987654321");
@@ -7,6 +7,12 @@ it("normaliza telefone em vários formatos", () => {
   expect(normalizarTelefone("11987654321")).toBe("11987654321");
   expect(normalizarTelefone("1133334444")).toBe("1133334444");
   expect(normalizarTelefone("98765-4321")).toBeNull();
+});
+
+it("formata telefone para mostrar na tela", () => {
+  expect(formatarTelefone("31975423850")).toBe("(31) 97542-3850");
+  expect(formatarTelefone("3133334444")).toBe("(31) 3333-4444");
+  expect(formatarTelefone("123")).toBe("123");
 });
 
 it("link do whatsapp codifica o texto", () => {

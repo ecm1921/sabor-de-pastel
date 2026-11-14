@@ -4,6 +4,7 @@ import { RequireAuth } from "./auth/RequireAuth";
 import { LoginPage } from "./auth/LoginPage";
 import { NovaSenhaPage } from "./auth/NovaSenhaPage";
 import { ToastProvider } from "./components/Toast";
+import { AtendenteLayout } from "./features/atendente/AtendenteLayout";
 
 export default function App() {
   return (
@@ -18,7 +19,7 @@ export default function App() {
               path="/atendente/*"
               element={
                 <RequireAuth>
-                  <p className="conteudo">Área da equipe</p>
+                  <AtendenteLayout />
                 </RequireAuth>
               }
             />
