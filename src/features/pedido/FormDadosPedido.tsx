@@ -39,7 +39,7 @@ export function FormDadosPedido({ dados, aoMudar, erros }: Props) {
 
       <div className="linha-campos">
         <Campo rotulo="Nome (opcional)">
-          <input value={dados.cliente} onChange={(e) => muda({ cliente: e.target.value })} autoComplete="name" />
+          <input value={dados.cliente} onChange={(e) => muda({ cliente: e.target.value })} autoComplete="name" maxLength={80} />
         </Campo>
         <Campo rotulo="Telefone com DDD" erro={erros.telefone}>
           <input
@@ -57,22 +57,22 @@ export function FormDadosPedido({ dados, aoMudar, erros }: Props) {
         <fieldset className="grupo">
           <legend>Endereço de entrega</legend>
           <Campo rotulo="Rua" erro={erros.rua}>
-            <input value={dados.endereco.rua} onChange={(e) => mudaEnd({ rua: e.target.value })} autoComplete="address-line1" aria-invalid={!!erros.rua} />
+            <input value={dados.endereco.rua} onChange={(e) => mudaEnd({ rua: e.target.value })} maxLength={120} autoComplete="address-line1" aria-invalid={!!erros.rua} />
           </Campo>
           <div className="linha-campos">
             <Campo rotulo="Número" erro={erros.numero}>
-              <input value={dados.endereco.numero} onChange={(e) => mudaEnd({ numero: e.target.value })} inputMode="numeric" aria-invalid={!!erros.numero} />
+              <input value={dados.endereco.numero} onChange={(e) => mudaEnd({ numero: e.target.value })} maxLength={20} inputMode="numeric" aria-invalid={!!erros.numero} />
             </Campo>
             <Campo rotulo="Bairro" erro={erros.bairro}>
-              <input value={dados.endereco.bairro} onChange={(e) => mudaEnd({ bairro: e.target.value })} aria-invalid={!!erros.bairro} />
+              <input value={dados.endereco.bairro} onChange={(e) => mudaEnd({ bairro: e.target.value })} maxLength={80} aria-invalid={!!erros.bairro} />
             </Campo>
           </div>
           <div className="linha-campos">
             <Campo rotulo="Complemento (opcional)">
-              <input value={dados.endereco.complemento} onChange={(e) => mudaEnd({ complemento: e.target.value })} autoComplete="address-line2" />
+              <input value={dados.endereco.complemento} onChange={(e) => mudaEnd({ complemento: e.target.value })} maxLength={120} autoComplete="address-line2" />
             </Campo>
             <Campo rotulo="Ponto de referência (opcional)">
-              <input value={dados.endereco.referencia} onChange={(e) => mudaEnd({ referencia: e.target.value })} />
+              <input value={dados.endereco.referencia} onChange={(e) => mudaEnd({ referencia: e.target.value })} maxLength={120} />
             </Campo>
           </div>
         </fieldset>
@@ -90,7 +90,7 @@ export function FormDadosPedido({ dados, aoMudar, erros }: Props) {
       </fieldset>
 
       <Campo rotulo="Observação (opcional)">
-        <input value={dados.observacao} onChange={(e) => muda({ observacao: e.target.value })} placeholder="Ex.: sem cebola, troco para 50" />
+        <input value={dados.observacao} onChange={(e) => muda({ observacao: e.target.value })} maxLength={300} placeholder="Ex.: sem cebola, troco para 50" />
       </Campo>
     </div>
   );

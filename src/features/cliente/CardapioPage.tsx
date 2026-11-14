@@ -25,6 +25,12 @@ export function CardapioPage() {
   const [sucessoSemId, setSucessoSemId] = useState(false);
   const [armadilha, setArmadilha] = useState("");
   const travaEnvio = useRef(false);
+  // Código do pedido em envio. Se a internet cair, a nova tentativa usa o mesmo código e o banco não duplica.
+  // Mudou o carrinho ou os dados? Vira outro pedido.
+  const codigoEnvio = useRef<string | null>(null);
+  useEffect(() => {
+    codigoEnvio.current = null;
+  }, [carrinho, dados]);
   const formRef = useRef<HTMLDivElement>(null);
   const ultimo = meusPedidos()[0];
 
@@ -60,7 +66,8 @@ export function CardapioPage() {
     travaEnvio.current = true;
     setEnviando(true);
     try {
-      const r = await criarPedido(paraEnvio(dados, itens));
+      codigoEnvio.current ??= crypto.randomUUID();
+      const r = await criarPedido({ ...paraEnvio(dados, itens), id: codigoEnvio.current });
       guardarPedido(r.id);
       guardarDados(dados);
       navegar(`/pedido/${r.id}`);

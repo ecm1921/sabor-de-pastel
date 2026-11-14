@@ -9,7 +9,8 @@ create function criar_pedido(
   p_observacao text,
   p_telefone text,
   p_endereco jsonb,
-  p_itens jsonb
+  p_itens jsonb,
+  p_id uuid default null -- gerado pelo aparelho; reenviar com o mesmo id não duplica o pedido
 ) returns table (id uuid, numero int)
 language plpgsql security definer set search_path = public as $$
 #variable_conflict use_column
@@ -26,6 +27,27 @@ declare
   v_id       uuid;
   v_entrega  boolean := p_tipo = 'Entrega';
 begin
+  -- Mesmo pedido enviado de novo (a internet caiu antes da resposta): devolve o que já foi gravado.
+  if p_id is not null then
+    select pedidos.id, pedidos.numero into v_id, v_numero from pedidos where pedidos.id = p_id;
+    if found then
+      id := v_id;
+      numero := v_numero;
+      return next;
+      return;
+    end if;
+  end if;
+
+  if length(coalesce(p_cliente, '')) > 80
+     or length(coalesce(p_observacao, '')) > 300
+     or length(coalesce(p_endereco ->> 'rua', '')) > 120
+     or length(coalesce(p_endereco ->> 'numero', '')) > 20
+     or length(coalesce(p_endereco ->> 'bairro', '')) > 80
+     or length(coalesce(p_endereco ->> 'complemento', '')) > 120
+     or length(coalesce(p_endereco ->> 'referencia', '')) > 120 then
+    raise exception 'TEXTO_LONGO';
+  end if;
+
   if coalesce(p_telefone, '') !~ '^[0-9]{10,11}$' then
     raise exception 'TELEFONE_INVALIDO';
   end if;
@@ -78,11 +100,11 @@ begin
   returning ultimo into v_numero;
 
   insert into pedidos (
-    numero, dia, cliente, tipo, pagamento, observacao, telefone,
+    id, numero, dia, cliente, tipo, pagamento, observacao, telefone,
     endereco_rua, endereco_numero, endereco_bairro, endereco_complemento, endereco_referencia,
     total, atualizado_por)
   values (
-    v_numero, v_dia, coalesce(trim(p_cliente), ''), p_tipo, p_pagamento, coalesce(trim(p_observacao), ''), p_telefone,
+    coalesce(p_id, gen_random_uuid()), v_numero, v_dia, coalesce(trim(p_cliente), ''), p_tipo, p_pagamento, coalesce(trim(p_observacao), ''), p_telefone,
     case when v_entrega then trim(p_endereco ->> 'rua') end,
     case when v_entrega then trim(p_endereco ->> 'numero') end,
     case when v_entrega then trim(p_endereco ->> 'bairro') end,
@@ -100,8 +122,8 @@ begin
   return next;
 end $$;
 
-revoke execute on function criar_pedido(text, text, text, text, text, jsonb, jsonb) from public;
-grant execute on function criar_pedido(text, text, text, text, text, jsonb, jsonb) to anon, authenticated;
+revoke execute on function criar_pedido(text, text, text, text, text, jsonb, jsonb, uuid) from public;
+grant execute on function criar_pedido(text, text, text, text, text, jsonb, jsonb, uuid) to anon, authenticated;
 
 -- Papel do usuário logado ('admin' ou 'balconista'), ou nulo se não tem perfil ativo.
 create function papel_atual() returns text

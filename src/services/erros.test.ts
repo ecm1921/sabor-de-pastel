@@ -18,6 +18,7 @@ it("mensagens fixas dos erros do banco", () => {
   expect(mensagemDeErro(doBanco("QUANTIDADE_INVALIDA"))).toBe("A quantidade de cada item vai de 1 a 50.");
   expect(mensagemDeErro(doBanco("TAMANHO_INVALIDO:Pastel de Carne"))).toBe("Escolha o tamanho de Pastel de Carne.");
   expect(mensagemDeErro(doBanco("PEDIDO_NAO_ENCONTRADO"))).toBe("Pedido não encontrado.");
+  expect(mensagemDeErro(doBanco("TEXTO_LONGO"))).toBe("Algum campo ficou grande demais. Encurte e tente de novo.");
 });
 
 it("login inválido", () => {

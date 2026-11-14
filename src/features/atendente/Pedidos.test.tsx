@@ -14,7 +14,9 @@ vi.mock("../../services/pedidos", () => ({
   },
 }));
 const tocarAviso = vi.fn();
-vi.mock("./som", () => ({ tocarAviso: () => tocarAviso() }));
+const somAtivo = vi.fn(() => true);
+const ativarSom = vi.fn(async () => {});
+vi.mock("./som", () => ({ tocarAviso: () => tocarAviso(), somAtivo: () => somAtivo(), ativarSom: () => ativarSom() }));
 
 import { Pedidos } from "./Pedidos";
 import { ToastProvider } from "../../components/Toast";
@@ -48,9 +50,45 @@ function montar(lista: Pedido[]) {
 }
 
 beforeEach(() => {
+  vi.useRealTimers();
   listarPedidosDoDia.mockReset();
   alterarStatus.mockReset().mockResolvedValue(undefined);
   tocarAviso.mockReset();
+  somAtivo.mockReset().mockReturnValue(true);
+  ativarSom.mockClear();
+});
+
+it("à meia-noite passa a mostrar os pedidos do novo dia", async () => {
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+  vi.setSystemTime(new Date("2026-11-15T02:59:00Z")); // 23:59 em Brasília
+  montar([]);
+  await waitFor(() => expect(listarPedidosDoDia).toHaveBeenCalledWith("2026-11-14"));
+  vi.setSystemTime(new Date("2026-11-15T03:01:00Z")); // 00:01 em Brasília
+  await act(async () => vi.advanceTimersByTime(30_000));
+  await waitFor(() => expect(listarPedidosDoDia).toHaveBeenLastCalledWith("2026-11-15"));
+});
+
+it("recarrega a fila a cada 30 s e ao voltar para a aba", async () => {
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+  montar([]);
+  await waitFor(() => expect(listarPedidosDoDia).toHaveBeenCalledTimes(1));
+  await act(async () => vi.advanceTimersByTime(30_000));
+  await waitFor(() => expect(listarPedidosDoDia).toHaveBeenCalledTimes(2));
+  await act(async () => document.dispatchEvent(new Event("visibilitychange")));
+  await waitFor(() => expect(listarPedidosDoDia).toHaveBeenCalledTimes(3));
+});
+
+it('mostra "Ativar som" enquanto o navegador bloqueia o som', async () => {
+  somAtivo.mockReturnValue(false);
+  montar([]);
+  fireEvent.click(await screen.findByRole("button", { name: "Ativar som" }));
+  await waitFor(() => expect(ativarSom).toHaveBeenCalled());
+});
+
+it('não mostra "Ativar som" quando o som já está liberado', async () => {
+  montar([]);
+  await screen.findByText(/Nenhum pedido hoje/);
+  expect(screen.queryByRole("button", { name: "Ativar som" })).not.toBeInTheDocument();
 });
 
 it('pedido recebido mostra o botão "Aceitar", que muda para preparando', async () => {

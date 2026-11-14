@@ -18,6 +18,7 @@ describe("criarPedido", () => {
       telefone: "31975423850",
       endereco: { rua: "Rua A", numero: "1", bairro: "Centro", complemento: "", referencia: "" },
       itens: [{ produtoId: "p1", tamanho: "M", quantidade: 2 }],
+      id: "11111111-2222-3333-4444-555555555555",
     });
     expect(r).toEqual({ id: "abc", numero: 7 });
     expect(rpc).toHaveBeenCalledWith("criar_pedido", {
@@ -28,6 +29,7 @@ describe("criarPedido", () => {
       p_telefone: "31975423850",
       p_endereco: { rua: "Rua A", numero: "1", bairro: "Centro", complemento: "", referencia: "" },
       p_itens: [{ produto_id: "p1", tamanho: "M", quantidade: 2 }],
+      p_id: "11111111-2222-3333-4444-555555555555",
     });
   });
 

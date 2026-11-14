@@ -11,7 +11,7 @@ export function LoginPage() {
   const local = useLocation();
   const [usuario, setUsuario] = useState("");
   const [senha, setSenha] = useState("");
-  const [erro, setErro] = useState("");
+  const [erro, setErro] = useState((local.state as { aviso?: string } | null)?.aviso ?? "");
   const [aviso, setAviso] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [modoRecuperar, setModoRecuperar] = useState(false);

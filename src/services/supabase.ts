@@ -5,6 +5,6 @@ const url = import.meta.env.VITE_SUPABASE_URL || "http://localhost:54321";
 const chave = import.meta.env.VITE_SUPABASE_ANON_KEY || "chave-ausente";
 
 export const supabase = createClient(url, chave, {
-  // PKCE: o link de recuperação de senha volta com ?code= (o HashRouter usa o # da URL).
+  // PKCE evita tokens no # da URL (o HashRouter usa o #). A recuperação de senha usa ?token_hash= (auth/Recuperacao.tsx).
   auth: { flowType: "pkce", persistSession: true, autoRefreshToken: true },
 });

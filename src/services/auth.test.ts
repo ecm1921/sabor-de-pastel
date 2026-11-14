@@ -3,17 +3,19 @@ import { it, expect, vi, beforeEach } from "vitest";
 const rpc = vi.fn();
 const signInWithPassword = vi.fn();
 const resetPasswordForEmail = vi.fn();
+const verifyOtp = vi.fn();
 vi.mock("./supabase", () => ({
   supabase: {
     rpc: (...a: unknown[]) => rpc(...a),
     auth: {
       signInWithPassword: (...a: unknown[]) => signInWithPassword(...a),
       resetPasswordForEmail: (...a: unknown[]) => resetPasswordForEmail(...a),
+      verifyOtp: (...a: unknown[]) => verifyOtp(...a),
     },
   },
 }));
 
-import { entrar, recuperarSenha } from "./auth";
+import { entrar, recuperarSenha, confirmarLinkRecuperacao } from "./auth";
 import { mensagemDeErro } from "./erros";
 
 beforeEach(() => {
@@ -49,6 +51,24 @@ it("recuperar senha envia o link para o e-mail cadastrado", async () => {
   resetPasswordForEmail.mockResolvedValue({ error: null });
   await recuperarSenha("joao");
   expect(resetPasswordForEmail).toHaveBeenCalledWith("joao@teste.local", {
-    redirectTo: expect.stringContaining("?recuperar=1"),
+    redirectTo: expect.stringMatching(/\/sabor-de-pastel\/$/),
   });
+});
+
+it("link de recuperação com código válido entra no modo de nova senha", async () => {
+  verifyOtp.mockResolvedValue({ error: null });
+  await expect(confirmarLinkRecuperacao("?token_hash=abc123&type=recovery")).resolves.toBe("ok");
+  expect(verifyOtp).toHaveBeenCalledWith({ token_hash: "abc123", type: "recovery" });
+});
+
+it("link de recuperação vencido ou usado é reconhecido como inválido", async () => {
+  verifyOtp.mockResolvedValue({ error: { message: "Token has expired or is invalid" } });
+  await expect(confirmarLinkRecuperacao("?token_hash=velho&type=recovery")).resolves.toBe("invalido");
+});
+
+it("endereço sem link de recuperação não faz nada", async () => {
+  verifyOtp.mockReset();
+  await expect(confirmarLinkRecuperacao("")).resolves.toBeNull();
+  await expect(confirmarLinkRecuperacao("?type=signup&token_hash=x")).resolves.toBeNull();
+  expect(verifyOtp).not.toHaveBeenCalled();
 });

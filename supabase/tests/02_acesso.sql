@@ -41,12 +41,8 @@ set local request.jwt.claims = '{}';
 do $$
 declare j jsonb;
 begin
-  if (select count(*) from pedidos) <> 0 then raise exception 'FALHOU [visitante não lista pedidos]'; end if;
-  if (select count(*) from itens_pedido) <> 0 then raise exception 'FALHOU [visitante não lista itens]'; end if;
   if exists (select 1 from produtos where not ativo) then raise exception 'FALHOU [visitante não vê produto inativo]'; end if;
   if not exists (select 1 from produtos where ativo) then raise exception 'FALHOU [visitante vê produto ativo]'; end if;
-  if (select count(*) from log_acoes) <> 0 then raise exception 'FALHOU [visitante não lê log]'; end if;
-  if (select count(*) from perfis) <> 0 then raise exception 'FALHOU [visitante não lê perfis]'; end if;
 
   j := obter_pedido_cliente(current_setting('teste.pedido')::uuid);
   if j is null or j ->> 'status' <> 'recebido' or (j ->> 'total')::numeric <> 50
@@ -64,12 +60,17 @@ begin
   if email_do_usuario('ninguem') is not null then raise exception 'FALHOU [usuário inexistente devolve nulo]'; end if;
   if email_do_usuario('saiu.teste') is not null then raise exception 'FALHOU [usuário inativo devolve nulo]'; end if;
 end $$;
+select pg_temp.espera_erro($q$ select count(*) from pedidos $q$, 'permission denied', 'visitante não lista pedidos');
+select pg_temp.espera_erro($q$ select count(*) from itens_pedido $q$, 'permission denied', 'visitante não lista itens');
+select pg_temp.espera_erro($q$ select count(*) from log_acoes $q$, 'permission denied', 'visitante não lê log');
+select pg_temp.espera_erro($q$ select count(*) from perfis $q$, 'permission denied', 'visitante não lê perfis');
+select pg_temp.espera_erro($q$ select count(*) from contador_dia $q$, 'permission denied', 'visitante não lê contador');
 select pg_temp.espera_erro(
   $q$ insert into pedidos (numero, tipo, pagamento, telefone) values (99, 'Retirada', 'Pix', '31975423850') $q$,
-  'new row violates row-level security', 'visitante não insere pedido direto na tabela');
+  'permission denied', 'visitante não insere pedido direto na tabela');
 select pg_temp.espera_erro(
   $q$ insert into produtos (nome, categoria, preco) values ('Hack', 'Outros', 1) $q$,
-  'new row violates row-level security', 'visitante não cria produto');
+  'permission denied', 'visitante não cria produto');
 reset role;
 
 -------------------------------------------------------------- balconista
@@ -91,10 +92,11 @@ begin
   delete from produtos where id = '00000000-0000-0000-0000-0000000000b1';
   get diagnostics n = row_count;
   if n <> 0 then raise exception 'FALHOU [balconista não exclui produto]'; end if;
-  update pedidos set status = 'entregue';
-  get diagnostics n = row_count;
-  if n <> 0 then raise exception 'FALHOU [balconista não altera pedido direto na tabela]'; end if;
 end $$;
+select pg_temp.espera_erro($q$ update pedidos set status = 'entregue' $q$, 'permission denied',
+  'balconista não altera pedido direto na tabela');
+select pg_temp.espera_erro($q$ update perfis set papel = 'admin' $q$, 'permission denied',
+  'balconista não se promove a admin');
 reset role;
 
 -------------------------------------------------------------- admin
@@ -113,7 +115,7 @@ begin
 end $$;
 select pg_temp.espera_erro(
   $q$ insert into log_acoes (acao, entidade, entidade_id) values ('produto_criado', 'produtos', 'falso') $q$,
-  'new row violates row-level security', 'ninguém escreve no log pelo app');
+  'permission denied', 'ninguém escreve no log pelo app');
 reset role;
 
 -------------------------------------------------------------- perfil desativado
@@ -126,6 +128,40 @@ begin
   if exists (select 1 from produtos where not ativo) then raise exception 'FALHOU [perfil inativo vê só cardápio público]'; end if;
 end $$;
 reset role;
+
+-------------------------------------------------------------- permissões nas tabelas (sem depender do padrão do Supabase)
+do $$
+declare
+  t record;
+begin
+  for t in select * from (values
+    -- papel, tabela, permissão, esperado
+    ('anon', 'produtos', 'SELECT', true),
+    ('anon', 'produtos', 'INSERT', false),
+    ('anon', 'pedidos', 'SELECT', false),
+    ('anon', 'pedidos', 'INSERT', false),
+    ('anon', 'pedidos', 'DELETE', false),
+    ('anon', 'itens_pedido', 'SELECT', false),
+    ('anon', 'log_acoes', 'SELECT', false),
+    ('anon', 'perfis', 'SELECT', false),
+    ('anon', 'contador_dia', 'SELECT', false),
+    ('authenticated', 'produtos', 'SELECT', true),
+    ('authenticated', 'produtos', 'UPDATE', true),
+    ('authenticated', 'pedidos', 'SELECT', true),
+    ('authenticated', 'pedidos', 'UPDATE', false),
+    ('authenticated', 'pedidos', 'TRUNCATE', false),
+    ('authenticated', 'itens_pedido', 'SELECT', true),
+    ('authenticated', 'log_acoes', 'SELECT', true),
+    ('authenticated', 'log_acoes', 'INSERT', false),
+    ('authenticated', 'perfis', 'SELECT', true),
+    ('authenticated', 'perfis', 'UPDATE', false),
+    ('authenticated', 'contador_dia', 'SELECT', false)
+  ) as x(papel, tabela, permissao, esperado) loop
+    if has_table_privilege(t.papel, 'public.' || t.tabela, t.permissao) <> t.esperado then
+      raise exception 'FALHOU [permissão %: % em %, esperado %]', t.papel, t.permissao, t.tabela, t.esperado;
+    end if;
+  end loop;
+end $$;
 
 rollback;
 select 'OK' as resultado;

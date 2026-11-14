@@ -497,6 +497,19 @@ textarea {
 .filtros {
   margin-bottom: 14px;
 }
+.aviso-som {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: var(--mostarda-clara);
+  border: 2px solid var(--mostarda);
+  border-radius: var(--raio-m);
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-weight: 600;
+}
 .vazio {
   text-align: center;
   color: var(--texto-suave);

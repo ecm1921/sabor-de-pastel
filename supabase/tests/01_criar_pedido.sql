@@ -97,5 +97,38 @@ select pg_temp.espera_erro(
       '[{"produto_id":"00000000-0000-0000-0000-0000000000a2","tamanho":null,"quantidade":1}]') $q$,
   'ENDERECO_INCOMPLETO', 'entrega sem endereço é recusada');
 
+-- reenviar o mesmo pedido (mesmo p_id, ex.: a internet caiu antes da resposta) não duplica
+do $$
+declare r1 record; r2 record;
+begin
+  select * into r1 from criar_pedido('Retirada', 'Pix', '', '', '31975423850', null,
+    '[{"produto_id":"00000000-0000-0000-0000-0000000000a2","tamanho":null,"quantidade":1}]',
+    '00000000-0000-0000-0000-00000000aaaa');
+  select * into r2 from criar_pedido('Retirada', 'Pix', '', '', '31975423850', null,
+    '[{"produto_id":"00000000-0000-0000-0000-0000000000a2","tamanho":null,"quantidade":1}]',
+    '00000000-0000-0000-0000-00000000aaaa');
+  if r1.id <> '00000000-0000-0000-0000-00000000aaaa' or r2.id <> r1.id or r2.numero <> r1.numero then
+    raise exception 'FALHOU [reenvio devolve o mesmo pedido]: % / %', r1, r2;
+  end if;
+  if (select count(*) from pedidos where id = r1.id) <> 1
+     or (select count(*) from itens_pedido where pedido_id = r1.id) <> 1 then
+    raise exception 'FALHOU [reenvio não duplica pedido nem itens]';
+  end if;
+end $$;
+
+select pg_temp.espera_erro(
+  format($q$ select criar_pedido('Retirada','Pix',%L,'','31975423850',null,
+      '[{"produto_id":"00000000-0000-0000-0000-0000000000a2","tamanho":null,"quantidade":1}]') $q$, repeat('a', 81)),
+  'TEXTO_LONGO', 'nome com mais de 80 letras é recusado');
+select pg_temp.espera_erro(
+  format($q$ select criar_pedido('Retirada','Pix','',%L,'31975423850',null,
+      '[{"produto_id":"00000000-0000-0000-0000-0000000000a2","tamanho":null,"quantidade":1}]') $q$, repeat('a', 301)),
+  'TEXTO_LONGO', 'observação com mais de 300 letras é recusada');
+select pg_temp.espera_erro(
+  format($q$ select criar_pedido('Entrega','Pix','','','31975423850',%L,
+      '[{"produto_id":"00000000-0000-0000-0000-0000000000a2","tamanho":null,"quantidade":1}]') $q$,
+      jsonb_build_object('rua', repeat('a', 121), 'numero', '1', 'bairro', 'Centro')),
+  'TEXTO_LONGO', 'endereço com mais de 120 letras é recusado');
+
 rollback;
 select 'OK' as resultado;

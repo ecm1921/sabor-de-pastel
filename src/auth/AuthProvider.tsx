@@ -21,13 +21,6 @@ export const ContextoAuth = createContext<ValorAuth>({
 
 export const useAuth = () => useContext(ContextoAuth);
 
-/** Quem chega pelo link de "esqueci minha senha" (…/?recuperar=1&code=…) vai para a tela de nova senha. */
-function tratarVoltaDaRecuperacao() {
-  const params = new URLSearchParams(window.location.search);
-  if (!params.has("recuperar")) return;
-  window.history.replaceState(null, "", `${import.meta.env.BASE_URL}#/atendente/nova-senha`);
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [carregando, setCarregando] = useState(true);
@@ -41,14 +34,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setCarregando(false);
       }
     };
-    // O Supabase troca o ?code= do link de recuperação por uma sessão antes de getSession() responder.
-    supabase.auth.getSession().finally(() => {
-      tratarVoltaDaRecuperacao();
-      atualizar();
-    });
+    atualizar();
     const { data } = supabase.auth.onAuthStateChange((evento) => {
       if (evento === "SIGNED_OUT") setPerfil(null);
-      if (evento === "PASSWORD_RECOVERY") window.location.hash = "#/atendente/nova-senha";
+      // Entrou por link de recuperação, trocou a senha ou renovou a sessão: confere o perfil de novo
+      // (um perfil desativado perde o acesso aqui). Fora do callback, como pede o supabase-js.
+      if (evento === "SIGNED_IN" || evento === "USER_UPDATED" || evento === "TOKEN_REFRESHED") setTimeout(atualizar, 0);
     });
     return () => {
       ativo = false;

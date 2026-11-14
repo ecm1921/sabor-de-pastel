@@ -73,6 +73,33 @@ it("campo armadilha preenchido não envia, mas mostra sucesso", async () => {
   expect(criarPedido).not.toHaveBeenCalled();
 });
 
+it("se a internet cai, tentar de novo reenvia o mesmo pedido (não duplica)", async () => {
+  criarPedido.mockRejectedValueOnce(new TypeError("Failed to fetch")).mockResolvedValueOnce({ id: "abc-123", numero: 7 });
+  await montar();
+  escolherPastelM();
+  digitar("Telefone com DDD", "31975423850");
+  enviar();
+  expect(await screen.findByRole("alert")).toHaveTextContent("Sem conexão. Tente de novo.");
+  enviar();
+  expect(await screen.findByText("Acompanhando abc-123")).toBeInTheDocument();
+  const [primeira, segunda] = criarPedido.mock.calls.map((c) => c[0].id);
+  expect(primeira).toMatch(/^[0-9a-f-]{36}$/);
+  expect(segunda).toBe(primeira);
+});
+
+it("se o cliente muda o carrinho depois de uma falha, vira um pedido novo", async () => {
+  criarPedido.mockRejectedValueOnce(new TypeError("Failed to fetch")).mockReturnValueOnce(new Promise(() => {}));
+  await montar();
+  escolherPastelM();
+  digitar("Telefone com DDD", "31975423850");
+  enviar();
+  await screen.findByRole("alert");
+  fireEvent.click(screen.getByRole("button", { name: "Aumentar Caldo de Cana" }));
+  enviar();
+  await waitFor(() => expect(criarPedido).toHaveBeenCalledTimes(2));
+  expect(criarPedido.mock.calls[1][0].id).not.toBe(criarPedido.mock.calls[0][0].id);
+});
+
 it("erro de item esgotado mantém o carrinho e mostra a mensagem", async () => {
   criarPedido.mockRejectedValue({ message: "ITEM_INDISPONIVEL:Pastel de Carne" });
   await montar();

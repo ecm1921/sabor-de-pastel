@@ -6,6 +6,7 @@ const FIXAS: Record<string, string> = {
   ITENS_VAZIOS: "Escolha pelo menos um item.",
   QUANTIDADE_INVALIDA: "A quantidade de cada item vai de 1 a 50.",
   PEDIDO_NAO_ENCONTRADO: "Pedido não encontrado.",
+  TEXTO_LONGO: "Algum campo ficou grande demais. Encurte e tente de novo.",
 };
 
 const GENERICA = "Algo deu errado. Tente de novo.";

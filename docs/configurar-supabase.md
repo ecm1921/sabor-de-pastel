@@ -18,7 +18,8 @@ No projeto, abra **SQL Editor → New query**. Cole o conteúdo de cada arquivo 
 2. `supabase/migrations/0002_funcoes.sql`
 3. `supabase/migrations/0003_rls.sql`
 4. `supabase/migrations/0004_log.sql`
-5. `supabase/seed.sql` (cardápio inicial)
+5. `supabase/migrations/0005_grants.sql`
+6. `supabase/seed.sql` (cardápio inicial)
 
 Depois, só no projeto de **teste**, rode os arquivos de `supabase/tests/` (o `01`, o `02` e o `03`). O resultado de cada um tem que ser `OK`. Não rode a pasta `supabase/tests/_local`, que é só para o computador.
 
@@ -45,7 +46,14 @@ values ('COLE-O-UID-AQUI', 'joao', 'João', 'balconista');
 
 Para tirar o acesso de alguém: `update perfis set ativo = false where usuario = 'joao';`
 
-**Link de recuperação de senha:** em **Authentication → URL Configuration**, coloque `https://ecm1921.github.io/sabor-de-pastel/` em **Site URL** e em **Redirect URLs**.
+**Link de recuperação de senha** (para funcionar mesmo se a pessoa abrir o e-mail em outro aparelho):
+
+1. Em **Authentication → URL Configuration**, coloque `https://ecm1921.github.io/sabor-de-pastel/` em **Site URL** e em **Redirect URLs**.
+2. Em **Authentication → Emails → Reset Password**, troque o link do modelo por:
+
+```html
+<a href="{{ .SiteURL }}?token_hash={{ .TokenHash }}&type=recovery">Criar nova senha</a>
+```
 
 ## 5. Ligar o app ao Supabase
 

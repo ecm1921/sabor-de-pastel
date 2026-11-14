@@ -3,6 +3,7 @@ import { AuthProvider } from "./auth/AuthProvider";
 import { RequireAuth } from "./auth/RequireAuth";
 import { LoginPage } from "./auth/LoginPage";
 import { NovaSenhaPage } from "./auth/NovaSenhaPage";
+import { Recuperacao } from "./auth/Recuperacao";
 import { ToastProvider } from "./components/Toast";
 import { AtendenteLayout } from "./features/atendente/AtendenteLayout";
 import { CardapioPage } from "./features/cliente/CardapioPage";
@@ -13,6 +14,7 @@ export default function App() {
     <ToastProvider>
       <AuthProvider>
         <HashRouter>
+          <Recuperacao />
           <Routes>
             <Route path="/" element={<CardapioPage />} />
             <Route path="/pedido/:id" element={<AcompanharPage />} />

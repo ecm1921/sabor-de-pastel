@@ -8,7 +8,7 @@ import { Botao, Chip, Modal } from "../../components/base";
 import { useToast } from "../../components/Toast";
 import { CartaoPedido } from "./CartaoPedido";
 import { Comanda } from "./Comanda";
-import { tocarAviso } from "./som";
+import { ativarSom, somAtivo, tocarAviso } from "./som";
 
 type Filtro = "todos" | "novos" | "andamento" | "concluidos";
 
@@ -21,7 +21,8 @@ const FILTROS: { id: Filtro; rotulo: string; status: Status[] | null }[] = [
 
 export function Pedidos() {
   const toast = useToast();
-  const [dia] = useState(hojeSP);
+  const [dia, setDia] = useState(hojeSP);
+  const [somLiberado, setSomLiberado] = useState(somAtivo);
   const [pedidos, setPedidos] = useState<Pedido[] | null>(null);
   const [erro, setErro] = useState("");
   const [filtro, setFiltro] = useState<Filtro>("todos");
@@ -55,6 +56,27 @@ export function Pedidos() {
     return assinarPedidosDoDia(dia, carregar);
   }, [dia, carregar]);
 
+  // Reserva para o tempo real: confere a cada 30 s e ao voltar para a aba. Também vira o dia à meia-noite.
+  const diaRef = useRef(dia);
+  diaRef.current = dia;
+  const carregarRef = useRef(carregar);
+  carregarRef.current = carregar;
+  useEffect(() => {
+    const conferir = () => {
+      const hoje = hojeSP();
+      if (hoje !== diaRef.current) setDia(hoje);
+      else carregarRef.current();
+      setSomLiberado(somAtivo());
+    };
+    const aoVoltar = () => document.visibilityState !== "hidden" && conferir();
+    const timer = setInterval(conferir, 30_000);
+    document.addEventListener("visibilitychange", aoVoltar);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", aoVoltar);
+    };
+  }, []);
+
   async function mudar(p: Pedido, destino: Status) {
     setOcupado(p.id);
     setNovos((n) => {
@@ -87,6 +109,20 @@ export function Pedidos() {
       <h1 id="titulo-pedidos" className="visualmente-oculto">
         Pedidos de hoje
       </h1>
+      {!somLiberado && (
+        <div className="aviso-som" role="status">
+          <span>O navegador bloqueou o aviso sonoro de pedido novo.</span>
+          <Botao
+            variante="escuro"
+            onClick={async () => {
+              await ativarSom();
+              setSomLiberado(somAtivo());
+            }}
+          >
+            Ativar som
+          </Botao>
+        </div>
+      )}
       <div className="chips filtros">
         {FILTROS.map((f) => (
           <Chip key={f.id} ativo={filtro === f.id} onClick={() => setFiltro(f.id)}>

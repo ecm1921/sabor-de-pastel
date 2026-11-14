@@ -9,7 +9,19 @@ async function emailDoUsuario(usuario: string): Promise<string | null> {
 }
 
 /** Endereço do site para onde o link de "esqueci minha senha" volta. */
-export const urlRecuperacao = () => `${window.location.origin}${import.meta.env.BASE_URL}?recuperar=1`;
+export const urlRecuperacao = () => `${window.location.origin}${import.meta.env.BASE_URL}`;
+
+/**
+ * Link do e-mail de recuperação: …/?token_hash=…&type=recovery (modelo de e-mail em docs/configurar-supabase.md).
+ * Funciona em qualquer aparelho. Devolve null quando o endereço não é um link de recuperação.
+ */
+export async function confirmarLinkRecuperacao(busca: string): Promise<"ok" | "invalido" | null> {
+  const params = new URLSearchParams(busca);
+  const token = params.get("token_hash");
+  if (!token || params.get("type") !== "recovery") return null;
+  const { error } = await supabase.auth.verifyOtp({ token_hash: token, type: "recovery" });
+  return error ? "invalido" : "ok";
+}
 
 export async function perfilAtual(): Promise<Perfil | null> {
   const { data } = await supabase.auth.getUser();

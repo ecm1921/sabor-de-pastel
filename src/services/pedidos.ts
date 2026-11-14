@@ -57,6 +57,8 @@ export interface NovoPedido {
   telefone: string;
   endereco: Endereco | null;
   itens: ItemCarrinho[];
+  /** Código gerado no aparelho: reenviar com o mesmo código não duplica o pedido. */
+  id?: string;
 }
 
 export async function criarPedido(input: NovoPedido): Promise<{ id: string; numero: number }> {
@@ -69,6 +71,7 @@ export async function criarPedido(input: NovoPedido): Promise<{ id: string; nume
       p_telefone: input.telefone,
       p_endereco: input.endereco,
       p_itens: input.itens.map((i) => ({ produto_id: i.produtoId, tamanho: i.tamanho, quantidade: i.quantidade })),
+      p_id: input.id ?? null,
     }),
   ) as { id: string; numero: number }[];
   return { id: data[0].id, numero: data[0].numero };
@@ -95,7 +98,10 @@ export function assinarPedidosDoDia(dia: string, aoMudar: () => void): () => voi
   const canal = supabase
     .channel(`pedidos-${dia}`)
     .on("postgres_changes", { event: "*", schema: "public", table: "pedidos", filter: `dia=eq.${dia}` }, () => aoMudar())
-    .subscribe();
+    // Ao conectar (ou reconectar depois de uma queda), recarrega: eventos perdidos na queda não são reenviados.
+    .subscribe((status) => {
+      if (status === "SUBSCRIBED") aoMudar();
+    });
   return () => {
     supabase.removeChannel(canal);
   };
