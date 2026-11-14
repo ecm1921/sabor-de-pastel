@@ -2,6 +2,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { Produto } from "../../domain/tipos";
 import { calcularTotal, formatarBRL, precoUnitario } from "../../domain/pedido";
+import { novoId } from "../../domain/id";
 import { listarCardapio } from "../../services/produtos";
 import { criarPedido } from "../../services/pedidos";
 import { mensagemDeErro } from "../../services/erros";
@@ -66,7 +67,7 @@ export function CardapioPage() {
     travaEnvio.current = true;
     setEnviando(true);
     try {
-      codigoEnvio.current ??= crypto.randomUUID();
+      codigoEnvio.current ??= novoId();
       const r = await criarPedido({ ...paraEnvio(dados, itens), id: codigoEnvio.current });
       guardarPedido(r.id);
       guardarDados(dados);
