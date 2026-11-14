@@ -29,6 +29,8 @@ Abra **Database → Publications** e confira se a tabela `pedidos` está marcada
 
 ## 4. Criar as contas da equipe
 
+Primeiro, desligue o cadastro público: em **Authentication → Sign In / Providers**, desligue **Allow new users to sign up** e clique em **Save**. Assim só você cria contas. O botão **Add user** continua funcionando.
+
 Para cada pessoa (admin e cada balconista):
 
 1. Abra **Authentication → Users → Add user → Create new user**.
