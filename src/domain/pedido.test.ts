@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { Produto } from "./tipos";
-import { precoUnitario, calcularTotal, proximosStatus, rotuloStatus, formatarBRL } from "./pedido";
+import { precoUnitario, calcularTotal, proximosStatus, rotuloStatus, formatarBRL, lerPreco } from "./pedido";
 
 const pastel: Produto = { id: "p1", nome: "Pastel de Carne", categoria: "Pastéis", preco: null, preco_m: 15, preco_g: 25, ativo: true };
 const bebida: Produto = { id: "b1", nome: "Caldo de Cana", categoria: "Bebidas", preco: 10, preco_m: null, preco_g: null, ativo: true };
@@ -40,6 +40,15 @@ it("rótulo de pronto depende do tipo", () => {
   expect(rotuloStatus("preparando", "Retirada")).toBe("Preparando");
   expect(rotuloStatus("entregue", "Retirada")).toBe("Entregue");
   expect(rotuloStatus("cancelado", "Entrega")).toBe("Cancelado");
+});
+
+it("lê preço digitado com vírgula ou ponto", () => {
+  expect(lerPreco("12,50")).toBe(12.5);
+  expect(lerPreco("12.5")).toBe(12.5);
+  expect(lerPreco("R$ 15")).toBe(15);
+  expect(lerPreco("")).toBeNull();
+  expect(lerPreco("abc")).toBeNull();
+  expect(lerPreco("1.234,00")).toBeNull();
 });
 
 it("formata reais", () => {

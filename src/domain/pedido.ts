@@ -41,6 +41,16 @@ export function rotuloStatus(s: Status, tipo: Tipo): string {
   return ROTULOS[s];
 }
 
+/** "12,50" ou "12.50" → 12.5. Texto vazio ou inválido → null. */
+export function lerPreco(t: string): number | null {
+  const limpo = t.trim().replace(/^R\$\s*/, "");
+  if (!/^\d+([.,]\d{1,2})?$/.test(limpo)) return null;
+  return Number(limpo.replace(",", "."));
+}
+
+/** 12.5 → "12,50" (para preencher o campo de preço). */
+export const precoParaCampo = (v: number | null) => (v == null ? "" : v.toFixed(2).replace(".", ","));
+
 export function formatarBRL(v: number): string {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
