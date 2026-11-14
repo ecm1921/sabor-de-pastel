@@ -146,3 +146,31 @@ $$;
 grant execute on function papel_atual() to anon, authenticated;
 grant execute on function email_do_usuario(text) to anon, authenticated;
 grant execute on function obter_pedido_cliente(uuid) to anon, authenticated;
+
+-- Muda o status de um pedido. Só equipe ativa; só as transições permitidas (iguais às do app).
+create function alterar_status(p_pedido uuid, p_novo text) returns void
+language plpgsql security definer set search_path = public as $$
+declare
+  v_atual text;
+begin
+  if papel_atual() is null then
+    raise exception 'SEM_PERMISSAO';
+  end if;
+
+  select status into v_atual from pedidos where id = p_pedido for update;
+  if not found then
+    raise exception 'PEDIDO_NAO_ENCONTRADO';
+  end if;
+
+  if not (
+       (v_atual = 'recebido'   and p_novo in ('preparando', 'cancelado'))
+    or (v_atual = 'preparando' and p_novo in ('pronto', 'cancelado'))
+    or (v_atual = 'pronto'     and p_novo = 'entregue')) then
+    raise exception 'TRANSICAO_INVALIDA';
+  end if;
+
+  update pedidos set status = p_novo, atualizado_por = auth.uid() where id = p_pedido;
+end $$;
+
+revoke execute on function alterar_status(uuid, text) from public;
+grant execute on function alterar_status(uuid, text) to anon, authenticated;

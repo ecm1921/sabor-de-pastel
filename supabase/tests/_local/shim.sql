@@ -5,7 +5,8 @@ create role authenticated nologin;
 create schema auth;
 create table auth.users (id uuid primary key, email text unique);
 create function auth.uid() returns uuid language sql stable as $$
-  select nullif(current_setting('request.jwt.claims', true)::jsonb ->> 'sub', '')::uuid
+  -- Igual ao auth.uid() do Supabase: configuração vazia ou ausente = ninguém logado.
+  select nullif(nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub', '')::uuid
 $$;
 grant usage on schema auth to anon, authenticated;
 grant execute on function auth.uid() to anon, authenticated;
