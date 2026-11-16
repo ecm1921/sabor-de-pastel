@@ -48,13 +48,21 @@ values ('COLE-O-UID-AQUI', 'joao.sabordepastel', 'João', 'balconista');
 
 Para tirar o acesso de alguém: `update perfis set ativo = false where usuario = 'joao.sabordepastel';`
 
-**Link de recuperação de senha** (para funcionar mesmo se a pessoa abrir o e-mail em outro aparelho):
+**Link de recuperação de senha:**
 
 1. Em **Authentication → URL Configuration**, coloque `https://ecm1921.github.io/sabor-de-pastel/` em **Site URL** e em **Redirect URLs**.
-2. Em **Authentication → Emails → Reset Password**, troque o link do modelo por:
+2. O modelo de e-mail padrão do Supabase já funciona, desde que a pessoa abra o link **no mesmo aparelho e navegador** em que clicou em "Esqueci minha senha".
+3. Opcional: para o link funcionar em qualquer aparelho, configure um SMTP próprio em **Authentication → Emails**. Sem SMTP o Supabase não deixa editar o modelo. Depois, troque o link do modelo **Reset Password** por:
 
 ```html
 <a href="{{ .SiteURL }}?token_hash={{ .TokenHash }}&type=recovery">Criar nova senha</a>
+```
+
+**Plano B: o admin troca a senha de alguém.** No **SQL Editor**, troque o usuário e a senha e rode:
+
+```sql
+update auth.users set encrypted_password = crypt('NOVA-SENHA-AQUI', gen_salt('bf'))
+where id = (select id from perfis where usuario = 'joao.sabordepastel');
 ```
 
 ## 5. Ligar o app ao Supabase
