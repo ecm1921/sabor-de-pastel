@@ -1,17 +1,31 @@
-/* Sabor de Pastel: tema.
-   Marca: carvão + mostarda + creme (cores do app original). Destaque: dourado de massa frita.
-   Elemento marcante: a "borda de pastel" (ondulada, como a massa apertada com garfo). Usar só onde indicado. */
+/* Sabor de Pastel: tema "cafeteria" nas cores da casa.
+   Marca: carvão + mostarda + creme. Clima de café: pílulas, cartões brancos, uma família só (Figtree) em pesos fortes.
+   Elemento marcante: o banner do cardápio, com fotos de produto e título grande (assets/fotos).
+   Assinatura da casa: a "borda de pastel" ondulada embaixo dos topos. */
 
 :root {
   --carvao: #141414;
   --mostarda: #ffc914;
   --mostarda-clara: #fff3c4;
   --creme: #f6f5f0;
-  --papel: #fffdf7;
   --massa: #b8650f;
+
+  /* papéis: superfície escura, ação, destaque */
+  --mata: var(--carvao);
+  --mata-funda: var(--carvao);
+  --verde: var(--carvao);
+  --verde-hover: #2b2b2b;
+  --verde-claro: var(--mostarda-clara);
+  --dourado: var(--mostarda);
+  --dourado-claro: var(--mostarda-clara);
+  --fundo: #ffffff;
+  --papel: #ffffff;
   --linha: #e6dfcf;
   --texto: #1d1b16;
   --texto-suave: #625b4d;
+  --sobre-mata: var(--creme);
+  --sobre-acao: var(--mostarda); /* texto em cima de botão/chip de ação */
+  --titulo: var(--carvao);
 
   /* status: cores sólidas, legíveis de longe */
   --st-recebido: #ffc914;
@@ -23,18 +37,20 @@
 
   --perigo: #b42318;
 
-  --fonte-marca: "Bagel Fat One", "Arial Rounded MT Bold", system-ui, sans-serif;
-  --fonte-texto: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --fonte-marca: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --fonte-texto: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* escala tipográfica (razão ~1.25) */
   --t-0: 0.8125rem;
   --t-1: 1rem;
   --t-2: 1.25rem;
   --t-3: 1.5625rem;
-  --t-4: 1.953rem;
+  --t-4: 2.25rem;
 
-  --raio-p: 8px;
-  --raio-m: 14px;
+  --raio-p: 10px;
+  --raio-m: 18px;
+  --pilula: 999px;
+  --sombra: 0 1px 2px rgb(60 45 10 / 0.06), 0 6px 18px rgb(60 45 10 / 0.07);
   --toque: 44px;
   --gutter: 16px;
 }
@@ -46,13 +62,14 @@
 }
 
 html {
-  color-scheme: light;
+  color-scheme: dark;
+  background: #1c1b18;
   -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
-  background: var(--creme);
+  background: var(--fundo);
   color: var(--texto);
   font-family: var(--fonte-texto);
   font-size: var(--t-1);
@@ -68,15 +85,20 @@ h3 {
 }
 
 h1,
+h2,
 .marca {
   font-family: var(--fonte-marca);
-  font-weight: 400;
-  letter-spacing: 0.01em;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--titulo);
+}
+
+h1 {
+  font-size: var(--t-3);
 }
 
 h2 {
   font-size: var(--t-2);
-  font-weight: 700;
 }
 
 button,
@@ -104,7 +126,7 @@ textarea {
 .conteudo {
   max-width: 760px;
   margin: 0 auto;
-  padding: var(--gutter) var(--gutter) 140px;
+  padding: var(--gutter) var(--gutter) 150px;
 }
 
 .conteudo--estreito {
@@ -120,7 +142,7 @@ textarea {
   border: 0;
   padding: 10px 0;
   min-height: var(--toque);
-  color: var(--massa);
+  color: var(--verde);
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -128,15 +150,16 @@ textarea {
 }
 
 .topo__link {
-  color: var(--creme);
+  color: var(--sobre-mata);
   font-weight: 600;
   min-height: var(--toque);
   display: inline-flex;
   align-items: center;
+  text-underline-offset: 4px;
 }
 
 .preco {
-  color: var(--massa);
+  color: var(--mata);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -152,24 +175,24 @@ textarea {
   right: 0;
   top: -9px;
   height: 10px;
-  background: radial-gradient(circle at 9px 10px, var(--borda-cor, var(--mostarda)) 8px, transparent 8.5px) 0 0 / 18px 10px
+  background: radial-gradient(circle at 9px 10px, var(--borda-cor, var(--mata)) 8px, transparent 8.5px) 0 0 / 18px 10px
     repeat-x;
   pointer-events: none;
 }
 .borda-pastel--baixo::before {
   top: auto;
   bottom: -9px;
-  background: radial-gradient(circle at 9px 0, var(--borda-cor, var(--mostarda)) 8px, transparent 8.5px) 0 0 / 18px 10px
+  background: radial-gradient(circle at 9px 0, var(--borda-cor, var(--mata)) 8px, transparent 8.5px) 0 0 / 18px 10px
     repeat-x;
 }
 
 /* ---------- cabeçalho ---------- */
 .topo {
-  --borda-cor: var(--carvao);
-  background: var(--carvao);
-  color: var(--creme);
+  --borda-cor: var(--mata);
+  background: var(--mata);
+  color: var(--sobre-mata);
   padding: 14px var(--gutter) 12px;
-  margin-bottom: 18px;
+  margin-bottom: 26px;
 }
 .topo__linha {
   max-width: 760px;
@@ -183,53 +206,81 @@ textarea {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  column-gap: 16px;
+  column-gap: 18px;
+}
+/* mesmo topo do cardápio: barra preta com a marca em amarelo no centro */
+.topo .topo__linha {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 }
 .topo .marca {
-  color: var(--mostarda);
-  font-size: var(--t-3);
+  grid-column: 2;
+  grid-row: 1;
   margin: 0;
+  color: var(--mostarda);
+  font-weight: 900;
+  font-size: clamp(0.95rem, 2.6vw, 1.2rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.topo .topo__linha > :not(.marca) {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  text-align: right;
+  font-size: var(--t-0);
 }
 
 /* ---------- botões ---------- */
 .botao {
   min-height: var(--toque);
-  padding: 10px 18px;
-  border-radius: var(--raio-p);
-  border: 2px solid transparent;
+  padding: 10px 22px;
+  border-radius: var(--pilula);
+  border: 1.5px solid transparent;
   font-weight: 700;
+  letter-spacing: 0.01em;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   text-decoration: none;
-  transition: transform 80ms ease;
+  transition:
+    transform 80ms ease,
+    background-color 120ms ease;
 }
 .botao:active:not(:disabled) {
-  transform: translateY(1px);
+  transform: scale(0.97);
 }
 .botao:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 .botao--primario {
-  background: var(--mostarda);
-  color: var(--carvao);
-  border-color: var(--carvao);
+  background: var(--verde);
+  color: var(--sobre-acao);
+}
+.botao--primario:disabled {
+  background: #dedad0;
+  color: #6b665c;
+  opacity: 1;
+}
+.botao--primario:hover:not(:disabled) {
+  background: var(--verde-hover);
 }
 .botao--secundario {
-  background: var(--papel);
-  color: var(--carvao);
-  border-color: var(--linha);
+  background: transparent;
+  color: var(--verde);
+  border-color: var(--verde);
 }
 .botao--perigo {
-  background: var(--papel);
+  background: transparent;
   color: var(--perigo);
   border-color: currentColor;
 }
 .botao--escuro {
-  background: var(--carvao);
+  background: var(--mata);
   color: var(--mostarda);
 }
 .botao--whats {
@@ -243,9 +294,9 @@ textarea {
 /* ---------- cartões ---------- */
 .card {
   background: var(--papel);
-  border: 1px solid var(--linha);
   border-radius: var(--raio-m);
-  padding: 14px;
+  box-shadow: var(--sombra);
+  padding: 18px;
 }
 
 /* ---------- chips (filtros e escolhas) ---------- */
@@ -256,24 +307,25 @@ textarea {
 }
 .chip {
   min-height: var(--toque);
-  padding: 8px 16px;
-  border-radius: 999px;
-  border: 2px solid var(--linha);
+  padding: 8px 18px;
+  border-radius: var(--pilula);
+  border: 1.5px solid var(--linha);
   background: var(--papel);
+  color: var(--texto);
   cursor: pointer;
   font-weight: 600;
 }
 .chip[aria-pressed="true"] {
-  background: var(--carvao);
-  border-color: var(--carvao);
-  color: var(--mostarda);
+  background: var(--verde);
+  border-color: var(--verde);
+  color: var(--sobre-acao);
 }
 
 /* ---------- status ---------- */
 .status {
   display: inline-block;
   padding: 4px 12px;
-  border-radius: 999px;
+  border-radius: var(--pilula);
   font-weight: 700;
   font-size: var(--t-0);
   white-space: nowrap;
@@ -300,16 +352,17 @@ textarea {
 .qtd {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 .qtd button {
   width: var(--toque);
   height: var(--toque);
-  border-radius: var(--raio-p);
-  border: 2px solid var(--carvao);
-  background: var(--mostarda);
+  border-radius: 50%;
+  border: 1.5px solid var(--verde);
+  background: var(--verde);
+  color: var(--sobre-acao);
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
   cursor: pointer;
   display: grid;
@@ -318,9 +371,10 @@ textarea {
 }
 .qtd button:first-child {
   background: var(--papel);
+  color: var(--verde);
 }
 .qtd button:disabled {
-  opacity: 0.35;
+  opacity: 0.3;
   cursor: not-allowed;
 }
 .qtd output {
@@ -334,12 +388,13 @@ textarea {
 /* ---------- formulários ---------- */
 .campo {
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 .campo > span {
   display: block;
   font-weight: 600;
   font-size: var(--t-0);
+  color: var(--texto-suave);
   margin-bottom: 4px;
 }
 .campo input,
@@ -347,22 +402,24 @@ textarea {
 .campo textarea {
   width: 100%;
   min-height: var(--toque);
-  padding: 10px 12px;
-  border: 2px solid var(--linha);
+  padding: 10px 14px;
+  border: 1.5px solid var(--linha);
   border-radius: var(--raio-p);
-  background: #fff;
+  background: var(--papel);
   font-size: 1rem; /* 16px evita zoom no iPhone */
 }
 .campo input:focus,
 .campo select:focus,
 .campo textarea:focus {
-  border-color: var(--massa);
+  border-color: var(--verde);
+  box-shadow: 0 0 0 3px var(--verde-claro);
   outline: none;
 }
 .campo [aria-invalid="true"] {
   border-color: var(--perigo);
 }
-.campo__erro {
+.campo__erro,
+.campo > .campo__erro {
   color: var(--perigo);
   font-size: var(--t-0);
   font-weight: 600;
@@ -395,16 +452,16 @@ textarea {
   max-width: 520px;
   max-height: 90vh;
   overflow: auto;
-  border-radius: var(--raio-m) var(--raio-m) 0 0;
-  padding: 20px var(--gutter) calc(20px + env(safe-area-inset-bottom));
-  animation: sobe 160ms ease-out;
+  border-radius: 24px 24px 0 0;
+  padding: 24px var(--gutter) calc(20px + env(safe-area-inset-bottom));
+  animation: sobe 180ms ease-out;
 }
 @media (min-width: 600px) {
   .modal-fundo {
     align-items: center;
   }
   .modal {
-    border-radius: var(--raio-m);
+    border-radius: 24px;
   }
 }
 @keyframes sobe {
@@ -418,33 +475,38 @@ textarea {
 .toast {
   position: fixed;
   left: 50%;
-  bottom: 110px;
+  bottom: 120px;
   transform: translateX(-50%);
-  background: var(--carvao);
+  background: var(--mata);
   color: var(--mostarda);
-  padding: 12px 18px;
-  border-radius: var(--raio-p);
+  padding: 12px 20px;
+  border-radius: var(--pilula);
+  box-shadow: var(--sombra);
   font-weight: 700;
   z-index: 40;
   max-width: calc(100% - 2 * var(--gutter));
 }
 
-/* ---------- barra fixa inferior (carrinho) ---------- */
+/* ---------- barra do pedido: pílula verde flutuante (o destaque da página) ---------- */
 .barra {
-  --borda-cor: var(--papel);
   position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--papel);
-  border-top: 0;
-  box-shadow: 0 -1px 0 var(--linha);
-  padding: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom));
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  max-width: 728px;
+  margin: 0 auto;
+  background: var(--mata);
+  color: var(--papel);
+  border-radius: var(--pilula);
+  box-shadow: 0 10px 30px rgb(20 20 20 / 0.3);
+  padding: 8px 8px 8px 24px;
   z-index: 20;
+  animation: sobe 220ms ease-out;
+}
+.barra.borda-pastel::before {
+  display: none;
 }
 .barra__linha {
-  max-width: 760px;
-  margin: 0 auto;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -452,16 +514,33 @@ textarea {
 .barra__total {
   flex: 1;
   min-width: 0;
+  line-height: 1.2;
+}
+.barra__total .suave {
+  color: rgb(245 243 238 / 0.75);
+  font-size: var(--t-0);
 }
 .barra__total b {
   display: block;
+  font-family: var(--fonte-marca);
+  font-weight: 800;
   font-size: var(--t-3);
+  color: var(--dourado);
   font-variant-numeric: tabular-nums;
+}
+.barra .botao--primario {
+  background: var(--mostarda);
+  color: var(--carvao);
+  min-height: 52px;
+  padding-inline: 26px;
+}
+.barra .botao--primario:hover:not(:disabled) {
+  background: #ffd84d;
 }
 
 /* ---------- área da equipe ---------- */
 .topo--equipe {
-  padding-bottom: 0;
+  padding-bottom: 14px;
 }
 .topo__usuario {
   display: flex;
@@ -478,21 +557,24 @@ textarea {
 }
 .abas {
   max-width: 760px;
-  margin: 10px auto 0;
+  margin: 12px auto 0;
   display: flex;
-  gap: 4px;
+  gap: 6px;
   overflow-x: auto;
   scrollbar-width: none;
 }
 .aba {
   flex: 1 0 auto;
   min-height: var(--toque);
-  padding: 10px 14px;
-  border-radius: var(--raio-p) var(--raio-p) 0 0;
-  color: var(--creme);
+  padding: 10px 16px;
+  border-radius: var(--pilula);
+  color: var(--sobre-mata);
   text-decoration: none;
   font-weight: 700;
   text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: rgb(255 255 255 / 0.08);
 }
 .aba.active {
@@ -501,7 +583,7 @@ textarea {
 }
 
 .filtros {
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 .aviso-som {
   display: flex;
@@ -509,17 +591,22 @@ textarea {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px;
-  background: var(--mostarda-clara);
-  border: 2px solid var(--mostarda);
+  background: var(--dourado-claro);
+  border: 1.5px solid var(--dourado);
   border-radius: var(--raio-m);
-  padding: 10px 14px;
-  margin-bottom: 14px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
   font-weight: 600;
 }
 .vazio {
   text-align: center;
   color: var(--texto-suave);
   padding: 32px 8px;
+}
+.vazio a {
+  color: var(--carvao);
+  font-weight: 700;
+  text-underline-offset: 3px;
 }
 .linha-botoes {
   display: flex;
@@ -531,14 +618,14 @@ textarea {
 /* ---------- card do pedido ---------- */
 .lista-pedidos {
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 .pedido {
   background: var(--papel);
-  border: 1px solid var(--linha);
   border-left: 8px solid var(--st-entregue);
   border-radius: var(--raio-m);
-  padding: 12px 14px;
+  box-shadow: var(--sombra);
+  padding: 14px 16px;
 }
 .pedido[data-status="recebido"] {
   border-left-color: var(--st-recebido);
@@ -554,12 +641,16 @@ textarea {
   opacity: 0.7;
 }
 .pedido[data-novo] {
-  box-shadow: 0 0 0 3px var(--mostarda);
+  box-shadow:
+    0 0 0 3px var(--dourado),
+    var(--sombra);
   animation: chegou 900ms ease-out 2;
 }
 @keyframes chegou {
   50% {
-    box-shadow: 0 0 0 7px var(--mostarda);
+    box-shadow:
+      0 0 0 7px var(--dourado),
+      var(--sombra);
   }
 }
 .pedido__topo {
@@ -588,9 +679,9 @@ textarea {
   font-weight: 600;
 }
 .pedido__obs {
-  background: var(--mostarda-clara);
-  padding: 4px 8px;
-  border-radius: 6px;
+  background: var(--dourado-claro);
+  padding: 4px 10px;
+  border-radius: var(--raio-p);
 }
 .pedido__itens {
   margin: 8px 0 0;
@@ -617,7 +708,11 @@ textarea {
 
 /* ---------- cardápio (cliente e balcão) ---------- */
 .cardapio__grupo {
-  margin-bottom: 20px;
+  margin-bottom: 28px;
+}
+.cardapio__grupo > h2 {
+  font-size: var(--t-3);
+  margin-bottom: 12px;
 }
 .cardapio__lista {
   list-style: none;
@@ -625,16 +720,18 @@ textarea {
   padding: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 .produto {
   background: var(--papel);
-  border: 2px solid var(--linha);
+  border: 1.5px solid var(--linha);
   border-radius: var(--raio-m);
-  padding: 12px;
+  box-shadow: var(--sombra);
+  padding: 14px 16px;
+  transition: border-color 120ms ease;
 }
 .produto[data-escolhido] {
-  border-color: var(--mostarda);
+  border-color: var(--carvao);
   background: #fffbe8;
 }
 .produto__nome {
@@ -642,13 +739,17 @@ textarea {
   font-weight: 700;
   font-size: var(--t-2);
   line-height: 1.2;
+  color: var(--texto);
 }
 .produto__opcao {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 4px 0;
+  padding: 6px 0;
+}
+.produto__opcao + .produto__opcao {
+  border-top: 1px solid var(--linha);
 }
 .produto__tam {
   display: block;
@@ -657,25 +758,284 @@ textarea {
 }
 
 /* ---------- cliente ---------- */
-.topo--cliente {
-  padding-top: 22px;
-  padding-bottom: 22px;
+/* Página do cliente, no modelo de cafeteria: barra branca com a marca no centro,
+   banner creme com fotos de produto dos dois lados e título grande no meio. */
+.barra-topo {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 clamp(16px, 3vw, 40px);
+  background: var(--carvao);
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
 }
-.topo--cliente .marca {
-  font-size: var(--t-4);
-}
-.topo__frase {
-  max-width: 760px;
-  margin: 6px auto 0;
+.barra-topo a {
+  min-height: var(--toque);
+  display: inline-flex;
+  align-items: center;
   color: var(--creme);
-  opacity: 0.85;
+  font-weight: 700;
+  text-decoration: none;
+}
+.barra-topo a:hover {
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  text-decoration-thickness: 2px;
+}
+.barra-topo__links {
+  display: flex;
+  gap: clamp(14px, 2.4vw, 28px);
+}
+.barra-topo__marca {
+  margin: 0;
+  font-family: var(--fonte-texto);
+  font-variation-settings: normal;
+  font-weight: 900;
+  font-size: clamp(0.95rem, 2.6vw, 1.2rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--mostarda);
+}
+.barra-topo .barra-topo__equipe {
+  justify-self: end;
+  color: rgb(246 245 240 / 0.6);
+  font-weight: 600;
+}
+
+.banner {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 30% 55% at 14% 78%, rgb(255 201 20 / 0.2), transparent 70%),
+    radial-gradient(ellipse 30% 55% at 86% 78%, rgb(255 201 20 / 0.2), transparent 70%),
+    radial-gradient(ellipse 60% 70% at 50% 40%, #232019, transparent 75%),
+    var(--carvao);
+  color: var(--creme);
+  min-height: clamp(360px, 40vw, 580px);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 24px var(--gutter);
+}
+/* todas as fotos do banner têm fundo transparente */
+.banner__foto {
+  position: absolute;
+  z-index: -1;
+  bottom: -7%;
+  height: 100%;
+  width: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 16px 22px rgb(0 0 0 / 0.55));
+}
+.banner__foto--esquerda {
+  left: -5%;
+}
+.banner__foto--direita {
+  aspect-ratio: auto;
+  height: 74%;
+  bottom: -6%;
+  right: -3%;
+}
+/* pilha de pastéis na frente da base do copo: os dois formam o "combo" do lado esquerdo */
+.banner__foto--pilha {
+  aspect-ratio: auto;
+  height: 50%;
+  bottom: -4%;
+  left: -3%;
+}
+/* o copo de refrigerante já vem com fundo transparente e é mais alto que largo */
+.banner__foto--refri {
+  aspect-ratio: auto;
+  mix-blend-mode: normal;
+  height: 94%;
+  bottom: -3%;
+  left: 7%;
+}
+.banner__titulo {
+  margin: 0 auto;
+  max-width: 9.5em;
+  font-weight: 900;
+  font-size: clamp(2.1rem, 5.6vw, 5rem);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  color: var(--creme);
+}
+.banner__circulo {
+  color: var(--carvao);
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+  padding: 0 0.12em;
+}
+.banner__circulo::before,
+.banner__circulo::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.banner__circulo::before {
+  inset: 4% -5% -2%;
+  background: var(--mostarda);
+  transform: rotate(-2deg);
+  z-index: -1;
+}
+.banner__circulo::after {
+  inset: -8% -9% -12%;
+  border: 0.055em solid var(--mostarda);
+  transform: rotate(-5deg);
+}
+/* título animado: as letras entram quicando uma a uma; depois uma onda leve passa de tempos em tempos */
+.banner__titulo .palavra {
+  display: inline-block;
+  white-space: nowrap;
+}
+.banner__titulo .letra {
+  display: inline-block;
+  animation:
+    letra-entra 700ms cubic-bezier(0.2, 1.5, 0.4, 1) both,
+    letra-onda 5s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 45ms), calc(2s + var(--i) * 55ms);
+}
+@keyframes letra-entra {
+  from {
+    opacity: 0;
+    transform: translateY(0.7em) rotate(10deg) scale(0.7);
+  }
+}
+@keyframes letra-onda {
+  0%,
+  14%,
+  100% {
+    transform: none;
+  }
+  7% {
+    transform: translateY(-0.14em) rotate(-3deg);
+  }
+}
+.banner__circulo::before {
+  animation: circulo-cor 450ms ease-out 1.05s both;
+}
+.banner__circulo::after {
+  animation: circulo-linha 550ms cubic-bezier(0.2, 1.4, 0.4, 1) 1.2s both;
+}
+@keyframes circulo-cor {
+  from {
+    opacity: 0;
+    transform: rotate(-2deg) scaleX(0);
+  }
+}
+@keyframes circulo-linha {
+  from {
+    opacity: 0;
+    transform: rotate(-25deg) scale(0.6);
+  }
+}
+.banner__frase {
+  margin: 18px auto 0;
+  max-width: 26ch;
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  font-weight: 600;
+  line-height: 1.35;
+  color: rgb(246 245 240 / 0.8);
+}
+@media (max-width: 760px) {
+  .banner {
+    place-items: start center;
+    min-height: 0;
+    padding: 32px var(--gutter) 50vw;
+  }
+  .banner__foto {
+    height: auto;
+    width: 60vw;
+    bottom: -5vw;
+  }
+  .banner__foto--esquerda {
+    left: -9vw;
+  }
+  .banner__foto--direita {
+    width: 52vw;
+    height: auto;
+    bottom: -4vw;
+    right: -5vw;
+  }
+  .banner__foto--refri {
+    width: auto;
+    height: 52vw;
+    bottom: -2vw;
+    left: 12vw;
+  }
+  .banner__foto--pilha {
+    width: auto;
+    height: 30vw;
+    bottom: -3vw;
+    left: -5vw;
+  }
+}
+.banner__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+.botao--amarelo {
+  background: var(--mostarda);
+  color: var(--carvao);
+}
+.botao--amarelo:hover {
+  background: #ffd84d;
+}
+.botao--contorno-claro {
+  background: transparent;
+  color: var(--creme);
+  border-color: rgb(246 245 240 / 0.6);
+}
+/* borda ondulada de pastel na base do banner */
+.banner__borda {
+  height: 12px;
+  background: radial-gradient(circle at 9px 0, var(--carvao) 9px, transparent 9.5px) 0 0 / 18px 12px repeat-x;
+}
+.banner__acoes .botao {
+  min-width: 168px;
+  font-size: 1.0625rem;
+}
+#cardapio {
+  scroll-margin-top: 64px;
+  padding-top: 28px;
+}
+
+/* categoria: foto redonda em fundo preto ao lado do nome, com linha embaixo */
+.cardapio__titulo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--linha);
+}
+.cardapio__foto {
+  width: 76px;
+  height: 76px;
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--carvao);
 }
 .aviso-erro {
   background: #fdecea;
-  border: 2px solid var(--perigo);
+  border: 1.5px solid var(--perigo);
   color: var(--perigo);
   border-radius: var(--raio-p);
-  padding: 10px 12px;
+  padding: 10px 14px;
   font-weight: 700;
 }
 .nota {
@@ -686,7 +1046,7 @@ textarea {
 /* linha do tempo do pedido: as etapas são uma sequência real */
 .linha-tempo {
   list-style: none;
-  margin: 8px 0 20px;
+  margin: 8px 0 24px;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -699,7 +1059,7 @@ textarea {
   font-size: var(--t-0);
   font-weight: 600;
   color: var(--texto-suave);
-  padding-top: 40px;
+  padding-top: 42px;
   position: relative;
 }
 .linha-tempo li::before {
@@ -708,8 +1068,8 @@ textarea {
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -719,21 +1079,21 @@ textarea {
 }
 .linha-tempo li[data-feito]::before {
   content: "✓";
-  background: var(--carvao);
-  color: var(--mostarda);
+  background: var(--verde);
+  color: var(--sobre-acao);
 }
 .linha-tempo li[aria-current="step"] {
   color: var(--texto);
 }
 .linha-tempo li[aria-current="step"]::before {
-  background: var(--mostarda);
-  color: var(--carvao);
-  box-shadow: 0 0 0 4px var(--mostarda-clara);
+  background: var(--dourado);
+  color: var(--mata-funda);
+  box-shadow: 0 0 0 4px var(--dourado-claro);
   animation: etapa 1.6s ease-in-out infinite;
 }
 @keyframes etapa {
   50% {
-    box-shadow: 0 0 0 8px var(--mostarda-clara);
+    box-shadow: 0 0 0 9px var(--dourado-claro);
   }
 }
 
@@ -760,14 +1120,14 @@ textarea {
 .kpis {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin: 14px 0;
+  gap: 12px;
+  margin: 16px 0;
 }
 .kpi {
   background: var(--papel);
-  border: 1px solid var(--linha);
   border-radius: var(--raio-m);
-  padding: 12px 14px;
+  box-shadow: var(--sombra);
+  padding: 14px 16px;
 }
 .kpi span {
   color: var(--texto-suave);
@@ -780,19 +1140,20 @@ textarea {
 }
 .kpi--destaque {
   grid-column: 1 / -1;
-  background: var(--carvao);
-  border-color: var(--carvao);
+  background: var(--mata);
 }
 .kpi--destaque span {
-  color: var(--creme);
+  color: var(--sobre-mata);
 }
 .kpi--destaque b {
-  color: var(--mostarda);
+  font-family: var(--fonte-marca);
+  font-weight: 800;
+  color: var(--dourado);
   font-size: var(--t-4);
 }
 .card + .card,
 .kpis + .card {
-  margin-top: 12px;
+  margin-top: 14px;
 }
 .tabela {
   width: 100%;
@@ -813,7 +1174,7 @@ textarea {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 .barras__rotulo {
   display: flex;
@@ -824,14 +1185,15 @@ textarea {
   display: block;
   height: 10px;
   margin-top: 4px;
-  background: var(--mostarda-clara);
-  border-radius: 6px;
+  background: var(--verde-claro);
+  border-radius: var(--pilula);
   overflow: hidden;
 }
 .barras__trilho i {
   display: block;
   height: 100%;
-  background: var(--massa);
+  background: var(--verde);
+  border-radius: var(--pilula);
 }
 .csv {
   width: 100%;
@@ -846,11 +1208,9 @@ textarea {
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 .titulo-secao {
-  font-family: var(--fonte-texto);
-  font-weight: 700;
   font-size: var(--t-3);
 }
 .lista-admin {
@@ -858,15 +1218,15 @@ textarea {
   margin: 0;
   padding: 0;
   background: var(--papel);
-  border: 1px solid var(--linha);
   border-radius: var(--raio-m);
+  box-shadow: var(--sombra);
   overflow: hidden;
 }
 .lista-admin li {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-right: 12px;
+  padding-right: 14px;
   border-bottom: 1px solid var(--linha);
 }
 .lista-admin li:last-child {
@@ -879,7 +1239,7 @@ textarea {
   flex: 1;
   min-width: 0;
   min-height: 60px;
-  padding: 10px 14px;
+  padding: 10px 16px;
   background: none;
   border: 0;
   text-align: left;
@@ -909,8 +1269,8 @@ textarea {
 .chave span {
   width: 52px;
   height: 32px;
-  border-radius: 999px;
-  background: #d7cfbd;
+  border-radius: var(--pilula);
+  background: #d3d6d2;
   position: relative;
   transition: background 150ms;
 }
@@ -923,10 +1283,11 @@ textarea {
   height: 24px;
   border-radius: 50%;
   background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
   transition: transform 150ms;
 }
 .chave input:checked + span {
-  background: var(--st-pronto);
+  background: var(--verde);
 }
 .chave input:checked + span::after {
   transform: translateX(20px);
@@ -944,14 +1305,15 @@ textarea {
   margin: 12px 0 0;
   padding: 0;
   background: var(--papel);
-  border: 1px solid var(--linha);
   border-radius: var(--raio-m);
+  box-shadow: var(--sombra);
+  overflow: hidden;
 }
 .log li {
   display: grid;
   grid-template-columns: 3.5rem 1fr;
   gap: 8px;
-  padding: 10px 14px;
+  padding: 10px 16px;
   border-bottom: 1px solid var(--linha);
 }
 .log li:last-child {
@@ -964,19 +1326,92 @@ textarea {
 .log li[data-acao="pedido_cancelado"],
 .log li[data-acao="produto_excluido"],
 .log li[data-acao="preco_alterado"] {
-  background: var(--mostarda-clara);
+  background: var(--dourado-claro);
 }
 
 /* ---------- grupos de formulário ---------- */
 .grupo {
   border: 0;
   padding: 0;
-  margin: 0 0 14px;
+  margin: 0 0 16px;
 }
 .grupo legend {
   font-weight: 700;
   margin-bottom: 8px;
   padding: 0;
+}
+
+/* ---------- fundo escuro em todo o app (cliente e equipe) ----------
+   Estes valores substituem os claros do início do arquivo. A comanda impressa continua branca (comanda.css). */
+:root {
+  --fundo: #1c1b18;
+  --papel: #26241f;
+  --linha: #3b3830;
+  --texto: #f3efe4;
+  --texto-suave: #b5ad9c;
+  --titulo: var(--creme);
+  --verde: var(--mostarda);
+  --verde-hover: #ffd84d;
+  --verde-claro: rgb(255 201 20 / 0.22);
+  --dourado-claro: rgb(255 201 20 / 0.25);
+  --mostarda-clara: rgb(255 201 20 / 0.25);
+  --sobre-acao: var(--carvao);
+  --perigo: #ff8f85;
+  --sombra: none;
+}
+.preco {
+  color: var(--mostarda);
+}
+.produto[data-escolhido] {
+  background: #2e2a1d;
+  border-color: var(--mostarda);
+}
+.card {
+  border: 1px solid var(--linha);
+}
+.campo input,
+.campo select,
+.campo textarea {
+  background: var(--fundo);
+}
+.aviso-erro {
+  background: rgb(255 143 133 / 0.12);
+}
+.vazio a {
+  color: var(--mostarda);
+}
+.cardapio__foto {
+  box-shadow: 0 0 0 2px var(--mostarda);
+}
+.botao--primario:disabled {
+  background: #3b3830;
+  color: #8f887a;
+}
+.kpi--destaque {
+  border: 1px solid var(--mostarda);
+}
+/* botão preto num cartão escuro: o contorno amarelo mantém o botão visível */
+.botao--escuro {
+  border-color: var(--mostarda);
+}
+/* carrinho: pílula amarela, que salta no fundo escuro */
+.barra {
+  background: var(--mostarda);
+  color: var(--carvao);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.55);
+}
+.barra__total .suave {
+  color: rgb(20 20 20 / 0.7);
+}
+.barra__total b {
+  color: var(--carvao);
+}
+.barra .botao--primario {
+  background: var(--carvao);
+  color: var(--mostarda);
+}
+.barra .botao--primario:hover:not(:disabled) {
+  background: #2b2b2b;
 }
 
 @media (prefers-reduced-motion: reduce) {
