@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useReducer, useRef, useState, type CSSProperties } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { Produto } from "../../domain/tipos";
 import { calcularTotal, formatarBRL, precoUnitario } from "../../domain/pedido";
@@ -12,6 +12,9 @@ import { ListaProdutos } from "../pedido/ListaProdutos";
 import { FormDadosPedido } from "../pedido/FormDadosPedido";
 import { paraEnvio, validarDados, type ErrosDados } from "../pedido/dados";
 import { guardarDados, guardarPedido, meusDados, meusPedidos } from "./memoria";
+import fotoRefri from "../../assets/fotos/refrigerante.webp";
+import fotoPilha from "../../assets/fotos/pilha-pasteis.webp";
+import fotoDireita from "../../assets/fotos/pastel-suco.webp";
 
 /** Página do cliente: escolhe os itens, informa os dados e envia o pedido. */
 export function CardapioPage() {
@@ -33,6 +36,12 @@ export function CardapioPage() {
     codigoEnvio.current = null;
   }, [carrinho, dados]);
   const formRef = useRef<HTMLDivElement>(null);
+  const cardapioRef = useRef<HTMLElement>(null);
+  // O app usa rotas com "#", então a âncora rola a página por código.
+  const irParaCardapio = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    cardapioRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+  };
   const ultimo = meusPedidos()[0];
 
   useEffect(() => {
@@ -89,19 +98,49 @@ export function CardapioPage() {
 
   return (
     <>
-      <header className="topo topo--cliente borda-pastel borda-pastel--baixo">
-        <div className="topo__linha">
-          <h1 className="marca">Sabor de Pastel</h1>
-          {ultimo && (
-            <Link to={`/pedido/${ultimo}`} className="topo__link">
-              Meu último pedido
-            </Link>
-          )}
-        </div>
-        <p className="topo__frase">Escolha, envie e acompanhe seu pedido por aqui.</p>
+      <header className="barra-topo">
+        <nav className="barra-topo__links" aria-label="Principal">
+          <a href="#cardapio" onClick={irParaCardapio}>
+            Cardápio
+          </a>
+          {ultimo && <Link to={`/pedido/${ultimo}`}>Meu pedido</Link>}
+        </nav>
+        <h1 className="barra-topo__marca">Sabor de Pastel</h1>
+        <Link to="/atendente" className="barra-topo__equipe" aria-label="Área da equipe">
+          Equipe
+        </Link>
       </header>
 
-      <main className="conteudo">
+      <section className="banner" aria-label="Destaque">
+        <img className="banner__foto banner__foto--refri" src={fotoRefri} alt="" />
+        <img className="banner__foto banner__foto--pilha" src={fotoPilha} alt="" />
+        <img className="banner__foto banner__foto--direita" src={fotoDireita} alt="" />
+        <div className="banner__texto">
+          <p className="banner__titulo">
+            <span className="visualmente-oculto">Peça seu pastel sem fila</span>
+            <span aria-hidden="true">
+              <Letras texto="Peça seu pastel" />{" "}
+              <span className="banner__circulo">
+                <Letras texto="sem fila" inicio={15} />
+              </span>
+            </span>
+          </p>
+          <p className="banner__frase">Escolha, envie e acompanhe seu pedido por aqui.</p>
+          <div className="banner__acoes">
+            <a className="botao botao--amarelo" href="#cardapio" onClick={irParaCardapio}>
+              Ver cardápio
+            </a>
+            {ultimo && (
+              <Link className="botao botao--contorno-claro" to={`/pedido/${ultimo}`}>
+                Acompanhar pedido
+              </Link>
+            )}
+          </div>
+        </div>
+      </section>
+      <div className="banner__borda" aria-hidden="true" />
+
+      <main className="conteudo" id="cardapio" ref={cardapioRef}>
         {erroCarga && (
           <p className="campo__erro" role="alert">
             {erroCarga}
@@ -129,10 +168,6 @@ export function CardapioPage() {
             {erroEnvio}
           </p>
         )}
-
-        <footer className="rodape">
-          <Link to="/atendente">Área da equipe</Link>
-        </footer>
       </main>
 
       {quantidade > 0 && (
@@ -148,6 +183,29 @@ export function CardapioPage() {
           </div>
         </div>
       )}
+    </>
+  );
+}
+
+/** Título do banner letra por letra, para a animação de entrada e a onda.
+ *  Cada palavra fica num bloco que não quebra no meio. */
+function Letras({ texto, inicio = 0 }: { texto: string; inicio?: number }) {
+  let n = inicio;
+  const palavras = texto.split(" ");
+  return (
+    <>
+      {palavras.map((palavra, i) => (
+        <span key={i}>
+          <span className="palavra">
+            {[...palavra].map((letra, j) => (
+              <span key={j} className="letra" style={{ "--i": n++ } as CSSProperties}>
+                {letra}
+              </span>
+            ))}
+          </span>
+          {i < palavras.length - 1 && " "}
+        </span>
+      ))}
     </>
   );
 }

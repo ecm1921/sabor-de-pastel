@@ -1,7 +1,11 @@
-import { CATEGORIAS, type Produto, type Tamanho } from "../../domain/tipos";
+import { CATEGORIAS, type Categoria, type Produto, type Tamanho } from "../../domain/tipos";
 import { formatarBRL, temTamanho } from "../../domain/pedido";
 import { Quantidade } from "../../components/Quantidade";
 import { chaveItem, type Carrinho } from "../cliente/carrinho";
+import fotoPasteis from "../../assets/fotos/categoria-pasteis.png";
+import fotoBebidas from "../../assets/fotos/categoria-bebidas.png";
+
+const FOTO_CATEGORIA: Partial<Record<Categoria, string>> = { Pastéis: fotoPasteis, Bebidas: fotoBebidas };
 
 interface Props {
   produtos: Produto[];
@@ -20,7 +24,10 @@ export function ListaProdutos({ produtos, carrinho, aoMudar }: Props) {
         if (!doGrupo.length) return null;
         return (
           <section key={cat} className="cardapio__grupo" aria-labelledby={`cat-${cat}`}>
-            <h2 id={`cat-${cat}`}>{cat}</h2>
+            <h2 id={`cat-${cat}`} className="cardapio__titulo">
+              {FOTO_CATEGORIA[cat] && <img className="cardapio__foto" src={FOTO_CATEGORIA[cat]} alt="" />}
+              {cat}
+            </h2>
             <ul className="cardapio__lista">
               {doGrupo.map((p) => {
                 const opcoes: { t: Tamanho | null; preco: number | null; rotulo: string }[] = temTamanho(p)
