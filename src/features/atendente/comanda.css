@@ -1,0 +1,63 @@
+/* Comanda: só aparece na impressão. Feita para impressora térmica de 80 mm (72 mm úteis). */
+.area-impressao {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 0;
+  }
+  html,
+  body {
+    background: #fff !important;
+  }
+  #root {
+    display: none !important;
+  }
+  .area-impressao {
+    display: block;
+  }
+  .comanda {
+    width: 72mm;
+    margin: 0 auto;
+    padding: 2mm 0 6mm;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 11pt;
+    line-height: 1.3;
+    color: #000;
+  }
+  .comanda p {
+    margin: 0 0 1mm;
+    word-break: break-word;
+  }
+  .comanda hr {
+    border: 0;
+    border-top: 1px dashed #000;
+    margin: 2mm 0;
+  }
+  .comanda__marca {
+    text-align: center;
+    font-weight: 700;
+    font-size: 13pt;
+  }
+  .comanda__numero {
+    text-align: center;
+    font-weight: 700;
+    font-size: 16pt;
+  }
+  .comanda__tipo {
+    text-align: center;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .comanda__item {
+    display: flex;
+    justify-content: space-between;
+    gap: 2mm;
+  }
+  .comanda__total {
+    font-weight: 700;
+    font-size: 13pt;
+  }
+}
