@@ -166,3 +166,10 @@ it("lembra telefone e endereço do último pedido", async () => {
   expect(screen.getByLabelText("Telefone com DDD")).toHaveValue("31975423850");
   expect(screen.getByLabelText("Rua")).toHaveValue("Rua A");
 });
+
+it("mostra o link da área da equipe no topo da página", async () => {
+  await montar();
+  const link = screen.getByRole("link", { name: "Área da equipe" });
+  expect(link.closest("header")).not.toBeNull();
+  expect(link).toHaveAttribute("href", "/atendente");
+});

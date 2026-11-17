@@ -179,6 +179,12 @@ textarea {
   justify-content: space-between;
   gap: 12px;
 }
+.topo__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  column-gap: 16px;
+}
 .topo .marca {
   color: var(--mostarda);
   font-size: var(--t-3);
@@ -663,14 +669,6 @@ textarea {
   margin: 6px auto 0;
   color: var(--creme);
   opacity: 0.85;
-}
-.rodape {
-  margin-top: 40px;
-  text-align: center;
-  font-size: var(--t-0);
-}
-.rodape a {
-  color: var(--texto-suave);
 }
 .aviso-erro {
   background: #fdecea;

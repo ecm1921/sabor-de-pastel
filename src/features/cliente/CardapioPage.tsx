@@ -92,11 +92,16 @@ export function CardapioPage() {
       <header className="topo topo--cliente borda-pastel borda-pastel--baixo">
         <div className="topo__linha">
           <h1 className="marca">Sabor de Pastel</h1>
-          {ultimo && (
-            <Link to={`/pedido/${ultimo}`} className="topo__link">
-              Meu último pedido
+          <nav className="topo__links">
+            {ultimo && (
+              <Link to={`/pedido/${ultimo}`} className="topo__link">
+                Meu último pedido
+              </Link>
+            )}
+            <Link to="/atendente" className="topo__link">
+              Área da equipe
             </Link>
-          )}
+          </nav>
         </div>
         <p className="topo__frase">Escolha, envie e acompanhe seu pedido por aqui.</p>
       </header>
@@ -129,10 +134,6 @@ export function CardapioPage() {
             {erroEnvio}
           </p>
         )}
-
-        <footer className="rodape">
-          <Link to="/atendente">Área da equipe</Link>
-        </footer>
       </main>
 
       {quantidade > 0 && (
