@@ -19,7 +19,8 @@ No projeto, abra **SQL Editor → New query**. Cole o conteúdo de cada arquivo 
 3. `supabase/migrations/0003_rls.sql`
 4. `supabase/migrations/0004_log.sql`
 5. `supabase/migrations/0005_grants.sql`
-6. `supabase/seed.sql` (cardápio inicial)
+6. `supabase/migrations/0006_pagamento_debito_credito.sql`
+7. `supabase/seed.sql` (cardápio inicial)
 
 Depois, só no projeto de **teste**, rode os arquivos de `supabase/tests/` (o `01`, o `02` e o `03`). O resultado de cada um tem que ser `OK`. Não rode a pasta `supabase/tests/_local`, que é só para o computador.
 

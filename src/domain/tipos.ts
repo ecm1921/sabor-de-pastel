@@ -1,12 +1,12 @@
 export type Tipo = "Retirada" | "Entrega";
-export type Pagamento = "Dinheiro" | "Pix" | "Cartão";
+export type Pagamento = "Dinheiro" | "Pix" | "Débito" | "Crédito";
 export type Categoria = "Pastéis" | "Bebidas" | "Outros";
 export type Status = "recebido" | "preparando" | "pronto" | "entregue" | "cancelado";
 export type Tamanho = "M" | "G";
 export type Papel = "admin" | "balconista";
 
 export const TIPOS: Tipo[] = ["Retirada", "Entrega"];
-export const PAGAMENTOS: Pagamento[] = ["Dinheiro", "Pix", "Cartão"];
+export const PAGAMENTOS: Pagamento[] = ["Dinheiro", "Pix", "Débito", "Crédito"];
 export const CATEGORIAS: Categoria[] = ["Pastéis", "Bebidas", "Outros"];
 
 export interface Produto {
