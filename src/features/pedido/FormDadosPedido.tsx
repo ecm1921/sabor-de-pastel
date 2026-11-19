@@ -95,8 +95,34 @@ export function FormDadosPedido({ dados, aoMudar, erros }: Props) {
         </div>
       </fieldset>
 
+      {dados.pagamento === "Dinheiro" && (
+        <fieldset className="grupo">
+          <legend>Precisa de troco?</legend>
+          <div className="chips">
+            <Chip ativo={dados.precisaTroco === false} onClick={() => muda({ precisaTroco: false })}>
+              Não preciso
+            </Chip>
+            <Chip ativo={dados.precisaTroco === true} onClick={() => muda({ precisaTroco: true })}>
+              Sim, preciso
+            </Chip>
+          </div>
+          {dados.precisaTroco === true && (
+            <Campo rotulo="Troco para quanto? (R$)" erro={erros.trocoPara}>
+              <input
+                value={dados.trocoPara}
+                onChange={(e) => muda({ trocoPara: e.target.value })}
+                inputMode="decimal"
+                placeholder="Ex.: 50"
+                aria-invalid={!!erros.trocoPara}
+              />
+            </Campo>
+          )}
+          {erros.troco && dados.precisaTroco === null && <p className="campo__erro">{erros.troco}</p>}
+        </fieldset>
+      )}
+
       <Campo rotulo="Observação (opcional)">
-        <input value={dados.observacao} onChange={(e) => muda({ observacao: e.target.value })} maxLength={300} placeholder="Ex.: sem cebola, troco para 50" />
+        <input value={dados.observacao} onChange={(e) => muda({ observacao: e.target.value })} maxLength={300} placeholder="Ex.: sem cebola, bem passado" />
       </Campo>
     </div>
   );
