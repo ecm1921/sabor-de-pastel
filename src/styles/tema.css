@@ -1097,6 +1097,105 @@ textarea {
   }
 }
 
+/* andamento do pedido (cliente): etapa atual em destaque + linha de etapas com ícones */
+.andamento {
+  margin: 8px 0 24px;
+}
+.andamento__destaque {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.andamento__icone-grande {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: var(--mostarda);
+  color: var(--carvao);
+  box-shadow: 0 8px 24px rgb(255 201 20 / 0.25);
+}
+.andamento__icone-grande svg {
+  width: 32px;
+  height: 32px;
+}
+.andamento__titulo {
+  margin: 0 0 2px;
+  font-size: var(--t-2);
+}
+.andamento__frase {
+  margin: 0;
+  color: var(--texto-suave);
+}
+.andamento__etapas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.andamento__etapas li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  font-size: var(--t-0);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--texto-suave);
+}
+/* traço que liga cada etapa à anterior */
+.andamento__etapas li + li::before {
+  content: "";
+  position: absolute;
+  top: 23px;
+  right: calc(50% + 30px);
+  left: calc(-50% + 30px);
+  height: 3px;
+  border-radius: 3px;
+  background: var(--linha);
+}
+.andamento__etapas li[data-feito] + li::before {
+  background: var(--mostarda);
+}
+.andamento__icone {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--papel);
+  border: 1.5px solid var(--linha);
+  color: var(--texto-suave);
+}
+.andamento__icone svg {
+  width: 22px;
+  height: 22px;
+}
+.andamento__etapas li[data-feito],
+.andamento__etapas li[aria-current="step"] {
+  color: var(--texto);
+}
+.andamento__etapas li[data-feito] .andamento__icone {
+  background: var(--mostarda);
+  border-color: var(--mostarda);
+  color: var(--carvao);
+}
+.andamento__etapas li[aria-current="step"]:not([data-feito]) .andamento__icone {
+  border: 2px solid var(--mostarda);
+  color: var(--mostarda);
+  animation: etapa-atual 1.8s ease-in-out infinite;
+}
+@keyframes etapa-atual {
+  50% {
+    box-shadow: 0 0 0 7px rgb(255 201 20 / 0.18);
+  }
+}
 .resumo-itens {
   list-style: none;
   margin: 0;

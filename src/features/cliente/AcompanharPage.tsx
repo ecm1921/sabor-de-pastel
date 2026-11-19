@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import type { Pedido, Status } from "../../domain/tipos";
-import { formatarBRL, rotuloStatus } from "../../domain/pedido";
+import type { Pedido } from "../../domain/tipos";
+import { formatarBRL } from "../../domain/pedido";
 import { formatarEndereco, linkWhatsApp, mensagemPedidoParaLoja } from "../../domain/whatsapp";
 import { assinarStatusDoPedido, obterPedidoCliente } from "../../services/pedidos";
 import { mensagemDeErro } from "../../services/erros";
 import { numeroLoja } from "../../config";
-
-const ETAPAS: Status[] = ["recebido", "preparando", "pronto", "entregue"];
+import { AndamentoPedido } from "./AndamentoPedido";
 
 /** O cliente acompanha o pedido. O status muda sozinho quando a pastelaria atualiza. */
 export function AcompanharPage() {
@@ -65,8 +64,6 @@ export function AcompanharPage() {
 }
 
 function Detalhe({ pedido: p }: { pedido: Pedido }) {
-  const atual = ETAPAS.indexOf(p.status);
-
   return (
     <>
       <h1>Pedido nº {p.numero}</h1>
@@ -76,13 +73,7 @@ function Detalhe({ pedido: p }: { pedido: Pedido }) {
           Este pedido foi cancelado. Se precisar, fale com a pastelaria pelo WhatsApp.
         </p>
       ) : (
-        <ol className="linha-tempo" aria-label="Andamento do pedido">
-          {ETAPAS.map((s, n) => (
-            <li key={s} aria-current={n === atual ? "step" : undefined} data-feito={n < atual || undefined}>
-              {rotuloStatus(s, p.tipo)}
-            </li>
-          ))}
-        </ol>
+        <AndamentoPedido status={p.status} tipo={p.tipo} />
       )}
 
       <a className="botao botao--whats botao--largo" href={linkWhatsApp(numeroLoja(), mensagemPedidoParaLoja(p))} target="_blank" rel="noreferrer">
