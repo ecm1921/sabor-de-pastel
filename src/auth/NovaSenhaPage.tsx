@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Botao } from "../components/base";
+import { CampoSenha } from "../components/CampoSenha";
 import { definirNovaSenha } from "../services/auth";
 import { mensagemDeErro } from "../services/erros";
 import { useToast } from "../components/Toast";
@@ -42,14 +43,8 @@ export function NovaSenhaPage() {
       <main className="conteudo conteudo--estreito">
         <h1>Nova senha</h1>
         <form className="card" onSubmit={salvar} noValidate>
-          <label className="campo">
-            <span>Nova senha</span>
-            <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} autoComplete="new-password" />
-          </label>
-          <label className="campo">
-            <span>Repita a nova senha</span>
-            <input type="password" value={confirma} onChange={(e) => setConfirma(e.target.value)} autoComplete="new-password" />
-          </label>
+          <CampoSenha rotulo="Nova senha" valor={senha} aoMudar={setSenha} autoComplete="new-password" />
+          <CampoSenha rotulo="Repita a nova senha" valor={confirma} aoMudar={setConfirma} autoComplete="new-password" />
           {erro && (
             <p className="campo__erro" role="alert">
               {erro}
