@@ -38,8 +38,14 @@ export function FormDadosPedido({ dados, aoMudar, erros }: Props) {
       </fieldset>
 
       <div className="linha-campos">
-        <Campo rotulo="Nome (opcional)">
-          <input value={dados.cliente} onChange={(e) => muda({ cliente: e.target.value })} autoComplete="name" maxLength={80} />
+        <Campo rotulo="Nome" erro={erros.cliente}>
+          <input
+            value={dados.cliente}
+            onChange={(e) => muda({ cliente: e.target.value })}
+            autoComplete="name"
+            maxLength={80}
+            aria-invalid={!!erros.cliente}
+          />
         </Campo>
         <Campo rotulo="Telefone com DDD" erro={erros.telefone}>
           <input
