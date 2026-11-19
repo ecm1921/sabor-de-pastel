@@ -19,6 +19,14 @@ it("na entrega, a etapa pronto vira saiu para entrega", () => {
   expect(screen.getByRole("listitem", { current: "step" })).toHaveTextContent("Saiu para entrega");
 });
 
+it("mostra a hora embaixo das etapas que já aconteceram", () => {
+  render(<AndamentoPedido status="preparando" tipo="Retirada" horarios={{ recebido: "15:56", preparando: "15:57" }} />);
+  const etapas = screen.getAllByRole("listitem");
+  expect(etapas[0]).toHaveTextContent("Recebido15:56");
+  expect(etapas[1]).toHaveTextContent("Preparando15:57");
+  expect(etapas[2]).toHaveTextContent(/^Pronto$/);
+});
+
 it("pedido entregue fica com todas as etapas feitas", () => {
   render(<AndamentoPedido status="entregue" tipo="Retirada" />);
   expect(screen.getByRole("heading", { name: "Pedido entregue" })).toBeInTheDocument();
