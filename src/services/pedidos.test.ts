@@ -74,6 +74,27 @@ describe("paraPedido", () => {
     expect(p.itens).toEqual([{ nome: "Pastel de Carne", tamanho: "M", quantidade: 2, precoUnitario: 15 }]);
   });
 
+  it("traz a hora de cada etapa no horário de Brasília", () => {
+    const p = paraPedido({
+      id: "abc",
+      numero: 5,
+      criado_em: "2026-11-19T21:56:00Z",
+      preparando_em: "2026-11-19T21:57:00Z",
+      pronto_em: "2026-11-19T22:04:00Z",
+      entregue_em: null,
+      cliente: "",
+      telefone: "31975423850",
+      tipo: "Entrega",
+      pagamento: "Pix",
+      observacao: "",
+      status: "pronto",
+      total: 15,
+      endereco: { rua: "Rua A", numero: "1", bairro: "Centro" },
+      itens: [],
+    });
+    expect(p.horarios).toEqual({ recebido: "18:56", preparando: "18:57", pronto: "19:04" });
+  });
+
   it("retirada não tem endereço e aceita o formato de obter_pedido_cliente", () => {
     const p = paraPedido({
       id: "abc",
@@ -91,6 +112,7 @@ describe("paraPedido", () => {
     });
     expect(p.dia).toBe("2026-11-14");
     expect(p.endereco).toBeNull();
+    expect(p.horarios).toEqual({ recebido: "10:00" });
     expect(p.itens[0]).toEqual({ nome: "Caldo de Cana", tamanho: null, quantidade: 1, precoUnitario: 10 });
   });
 });

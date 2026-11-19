@@ -64,6 +64,14 @@ it("o status muda sozinho quando a pastelaria aceita", async () => {
   expect(screen.getByRole("listitem", { current: "step" })).toHaveTextContent("Saiu para entrega");
 });
 
+it("quando o status muda, busca de novo para mostrar a hora da etapa", async () => {
+  await montar();
+  obterPedidoCliente.mockResolvedValue({ ...pedido, status: "preparando", horarios: { recebido: "18:05", preparando: "18:09" } });
+  await act(async () => mudarStatus("preparando"));
+  expect(obterPedidoCliente).toHaveBeenCalledTimes(2);
+  expect(screen.getByRole("listitem", { current: "step" })).toHaveTextContent("Preparando18:09");
+});
+
 it("pedido não encontrado avisa o cliente", async () => {
   obterPedidoCliente.mockResolvedValue(null);
   render(

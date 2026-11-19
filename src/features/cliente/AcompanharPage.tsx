@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { Pedido } from "../../domain/tipos";
 import { formatarBRL } from "../../domain/pedido";
@@ -34,6 +34,20 @@ export function AcompanharPage() {
       parar();
     };
   }, [id]);
+
+  // O aviso em tempo real traz só o status. Quando ele muda, busca de novo para pegar a hora da etapa.
+  const statusAnterior = useRef<string | null>(null);
+  const statusAtual = pedido?.status ?? null;
+  useEffect(() => {
+    const antes = statusAnterior.current;
+    statusAnterior.current = statusAtual;
+    if (!antes || !statusAtual || antes === statusAtual) return;
+    obterPedidoCliente(id)
+      .then((novo) => novo && setPedido((p) => (p ? { ...p, horarios: novo.horarios } : p)))
+      .catch(() => {
+        // sem conexão: os horários chegam na próxima mudança
+      });
+  }, [id, statusAtual]);
 
   return (
     <>
@@ -73,7 +87,7 @@ function Detalhe({ pedido: p }: { pedido: Pedido }) {
           Este pedido foi cancelado. Se precisar, fale com a pastelaria pelo WhatsApp.
         </p>
       ) : (
-        <AndamentoPedido status={p.status} tipo={p.tipo} />
+        <AndamentoPedido status={p.status} tipo={p.tipo} horarios={p.horarios} />
       )}
 
       <a className="botao botao--whats botao--largo" href={linkWhatsApp(numeroLoja(), mensagemPedidoParaLoja(p))} target="_blank" rel="noreferrer">

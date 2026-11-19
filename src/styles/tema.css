@@ -1186,6 +1186,12 @@ textarea {
 .andamento__etapas li[data-feito] + li::before {
   background: var(--mostarda);
 }
+.andamento__hora {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--texto-suave);
+  font-variant-numeric: tabular-nums;
+}
 .andamento__icone {
   display: grid;
   place-items: center;

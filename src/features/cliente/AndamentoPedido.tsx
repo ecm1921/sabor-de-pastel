@@ -68,7 +68,7 @@ function destaque(s: Status, tipo: Tipo): { titulo: string; frase: string } {
 }
 
 /** Andamento do pedido para o cliente: a etapa atual em destaque e a linha de etapas com ícones. */
-export function AndamentoPedido({ status, tipo }: { status: Status; tipo: Tipo }) {
+export function AndamentoPedido({ status, tipo, horarios }: { status: Status; tipo: Tipo; horarios?: Partial<Record<Status, string>> }) {
   const atual = ETAPAS.indexOf(status);
   const { titulo, frase } = destaque(status, tipo);
 
@@ -86,6 +86,7 @@ export function AndamentoPedido({ status, tipo }: { status: Status; tipo: Tipo }
           <li key={s} aria-current={n === atual ? "step" : undefined} data-feito={n < atual || (status === "entregue" && n === atual) || undefined}>
             <span className="andamento__icone">{icone(s, tipo)}</span>
             {rotuloStatus(s, tipo)}
+            {horarios?.[s] && <small className="andamento__hora">{horarios[s]}</small>}
           </li>
         ))}
       </ol>

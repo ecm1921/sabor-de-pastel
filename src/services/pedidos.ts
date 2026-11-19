@@ -46,7 +46,19 @@ export function paraPedido(r: any): Pedido {
     total: Number(r.total),
     endereco,
     itens,
+    horarios: horariosDasEtapas(r),
   };
+}
+
+const horaBrasilia = (iso: string) => new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: FUSO });
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function horariosDasEtapas(r: any): Partial<Record<Status, string>> {
+  const h: Partial<Record<Status, string>> = { recebido: horaBrasilia(r.criado_em) };
+  if (r.preparando_em) h.preparando = horaBrasilia(r.preparando_em);
+  if (r.pronto_em) h.pronto = horaBrasilia(r.pronto_em);
+  if (r.entregue_em) h.entregue = horaBrasilia(r.entregue_em);
+  return h;
 }
 
 export interface NovoPedido {

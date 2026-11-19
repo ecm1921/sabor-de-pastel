@@ -54,6 +54,8 @@ export interface Pedido {
   total: number;
   endereco: Endereco | null;
   itens: ItemPedido[];
+  /** Hora (HH:MM, Brasília) em que cada etapa começou. Só as etapas que já aconteceram. */
+  horarios?: Partial<Record<Status, string>>;
 }
 
 /** O que o cliente vê do próprio pedido (mesmo formato do pedido da equipe). */
