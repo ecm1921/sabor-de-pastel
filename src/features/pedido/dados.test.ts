@@ -7,8 +7,14 @@ it("telefone é obrigatório e precisa de DDD", () => {
   expect(validarDados({ ...dadosVazios(), telefone: "(31) 97542-3850" }).telefone).toBeUndefined();
 });
 
+it("nome é obrigatório", () => {
+  expect(validarDados({ ...dadosVazios(), cliente: "" }).cliente).toBe("Informe o nome.");
+  expect(validarDados({ ...dadosVazios(), cliente: "   " }).cliente).toBe("Informe o nome.");
+  expect(validarDados({ ...dadosVazios(), cliente: "Ana" }).cliente).toBeUndefined();
+});
+
 it("entrega exige rua, número e bairro; retirada não", () => {
-  const entrega = { ...dadosVazios(), telefone: "31975423850", tipo: "Entrega" as const };
+  const entrega = { ...dadosVazios(), cliente: "Ana", telefone: "31975423850", tipo: "Entrega" as const };
   expect(validarDados(entrega)).toEqual({
     rua: "Informe a rua.",
     numero: "Informe o número.",

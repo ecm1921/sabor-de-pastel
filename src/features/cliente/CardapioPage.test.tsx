@@ -57,6 +57,7 @@ it("envia uma vez mesmo com dois cliques", async () => {
   criarPedido.mockReturnValue(new Promise(() => {}));
   await montar();
   escolherPastelM();
+  digitar("Nome", "Ana");
   digitar("Telefone com DDD", "31975423850");
   enviar();
   enviar();
@@ -66,6 +67,7 @@ it("envia uma vez mesmo com dois cliques", async () => {
 it("campo armadilha preenchido não envia, mas mostra sucesso", async () => {
   await montar();
   escolherPastelM();
+  digitar("Nome", "Ana");
   digitar("Telefone com DDD", "31975423850");
   fireEvent.change(document.querySelector('input[name="site"]')!, { target: { value: "http://spam" } });
   enviar();
@@ -77,6 +79,7 @@ it("se a internet cai, tentar de novo reenvia o mesmo pedido (não duplica)", as
   criarPedido.mockRejectedValueOnce(new TypeError("Failed to fetch")).mockResolvedValueOnce({ id: "abc-123", numero: 7 });
   await montar();
   escolherPastelM();
+  digitar("Nome", "Ana");
   digitar("Telefone com DDD", "31975423850");
   enviar();
   expect(await screen.findByRole("alert")).toHaveTextContent("Sem conexão. Tente de novo.");
@@ -91,6 +94,7 @@ it("se o cliente muda o carrinho depois de uma falha, vira um pedido novo", asyn
   criarPedido.mockRejectedValueOnce(new TypeError("Failed to fetch")).mockReturnValueOnce(new Promise(() => {}));
   await montar();
   escolherPastelM();
+  digitar("Nome", "Ana");
   digitar("Telefone com DDD", "31975423850");
   enviar();
   await screen.findByRole("alert");
@@ -104,6 +108,7 @@ it("erro de item esgotado mantém o carrinho e mostra a mensagem", async () => {
   criarPedido.mockRejectedValue({ message: "ITEM_INDISPONIVEL:Pastel de Carne" });
   await montar();
   escolherPastelM();
+  digitar("Nome", "Ana");
   digitar("Telefone com DDD", "31975423850");
   enviar();
   expect(await screen.findByRole("alert")).toHaveTextContent("Pastel de Carne acabou. Tire do carrinho e tente de novo.");
@@ -114,6 +119,7 @@ it("após enviar, vai para /pedido/:id e guarda o id e os dados no aparelho", as
   criarPedido.mockResolvedValue({ id: "abc-123", numero: 7 });
   await montar();
   escolherPastelM();
+  digitar("Nome", "Ana");
   digitar("Telefone com DDD", "(31) 97542-3850");
   enviar();
   expect(await screen.findByText("Acompanhando abc-123")).toBeInTheDocument();
@@ -143,13 +149,14 @@ it("entrega mostra campos de endereço e retirada não", async () => {
   expect(screen.getByLabelText("Bairro")).toBeInTheDocument();
 });
 
-it("não envia sem telefone válido ou, em Entrega, sem rua, número e bairro", async () => {
+it("não envia sem nome, sem telefone válido ou, em Entrega, sem rua, número e bairro", async () => {
   await montar();
   escolherPastelM();
   fireEvent.click(screen.getByRole("button", { name: "Entrega" }));
   digitar("Telefone com DDD", "1234");
   enviar();
   expect(await screen.findByText("Informe o telefone com DDD.")).toBeInTheDocument();
+  expect(screen.getByText("Informe o nome.")).toBeInTheDocument();
   expect(screen.getByText("Informe a rua.")).toBeInTheDocument();
   expect(screen.getByText("Informe o número.")).toBeInTheDocument();
   expect(screen.getByText("Informe o bairro.")).toBeInTheDocument();

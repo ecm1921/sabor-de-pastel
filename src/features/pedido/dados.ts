@@ -12,7 +12,7 @@ export interface DadosPedido {
   endereco: Endereco;
 }
 
-export type ErrosDados = Partial<Record<"telefone" | "rua" | "numero" | "bairro", string>>;
+export type ErrosDados = Partial<Record<"cliente" | "telefone" | "rua" | "numero" | "bairro", string>>;
 
 export const dadosVazios = (): DadosPedido => ({
   cliente: "",
@@ -25,6 +25,7 @@ export const dadosVazios = (): DadosPedido => ({
 
 export function validarDados(d: DadosPedido): ErrosDados {
   const erros: ErrosDados = {};
+  if (!d.cliente.trim()) erros.cliente = "Informe o nome.";
   if (!normalizarTelefone(d.telefone)) erros.telefone = "Informe o telefone com DDD.";
   if (d.tipo === "Entrega") {
     if (!d.endereco.rua.trim()) erros.rua = "Informe a rua.";
