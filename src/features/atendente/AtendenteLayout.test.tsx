@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { it, expect, vi } from "vitest";
 import type { Perfil } from "../../domain/tipos";
@@ -25,10 +25,14 @@ function montar(perfil: Perfil, rota = "/atendente/pedidos") {
   );
 }
 
+const abasVisiveis = () =>
+  within(screen.getByRole("navigation", { name: "Seções da equipe" }))
+    .getAllByRole("link")
+    .map((a) => a.textContent);
+
 it("balconista não vê as abas Cardápio e Log", () => {
   montar({ id: "2", usuario: "joao", nome: "João", papel: "balconista" });
-  const abas = screen.getAllByRole("link").map((a) => a.textContent);
-  expect(abas).toEqual(["Pedidos", "Novo pedido", "Resumo"]);
+  expect(abasVisiveis()).toEqual(["Pedidos", "Novo pedido", "Resumo"]);
 });
 
 it("balconista que digita o endereço do log não vê o log", () => {
@@ -39,6 +43,11 @@ it("balconista que digita o endereço do log não vê o log", () => {
 
 it("admin vê todas as abas e o log", () => {
   montar({ id: "1", usuario: "admin", nome: "Admin", papel: "admin" }, "/atendente/log");
-  expect(screen.getAllByRole("link").map((a) => a.textContent)).toEqual(["Pedidos", "Novo pedido", "Resumo", "Cardápio", "Log"]);
+  expect(abasVisiveis()).toEqual(["Pedidos", "Novo pedido", "Resumo", "Cardápio", "Log"]);
   expect(screen.getByText("Tela de log")).toBeInTheDocument();
+});
+
+it("o topo da equipe tem o link para trocar a senha", () => {
+  montar({ id: "2", usuario: "joao", nome: "João", papel: "balconista" });
+  expect(screen.getByRole("link", { name: "Trocar senha" })).toHaveAttribute("href", "/atendente/nova-senha");
 });

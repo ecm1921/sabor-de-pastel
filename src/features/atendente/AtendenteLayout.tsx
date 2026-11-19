@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { NavLink, Navigate, Route, Routes } from "react-router-dom";
+import { Link, NavLink, Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "../../auth/AuthProvider";
 import { RequireAuth } from "../../auth/RequireAuth";
 import { Pedidos } from "./Pedidos";
@@ -35,6 +35,9 @@ export function AtendenteLayout() {
           <p className="marca">Sabor de Pastel</p>
           <div className="topo__usuario">
             <span>{perfil?.nome}</span>
+            <Link to="/atendente/nova-senha" className="topo__link">
+              Trocar senha
+            </Link>
             <button type="button" className="topo__link link-claro" onClick={sair}>
               Sair
             </button>

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Botao } from "../components/base";
 import { definirNovaSenha } from "../services/auth";
 import { mensagemDeErro } from "../services/erros";
@@ -30,26 +30,36 @@ export function NovaSenhaPage() {
   }
 
   return (
-    <main className="conteudo conteudo--estreito">
-      <h1>Nova senha</h1>
-      <form className="card" onSubmit={salvar} noValidate>
-        <label className="campo">
-          <span>Nova senha</span>
-          <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} autoComplete="new-password" />
-        </label>
-        <label className="campo">
-          <span>Repita a nova senha</span>
-          <input type="password" value={confirma} onChange={(e) => setConfirma(e.target.value)} autoComplete="new-password" />
-        </label>
-        {erro && (
-          <p className="campo__erro" role="alert">
-            {erro}
-          </p>
-        )}
-        <Botao type="submit" largo carregando={enviando}>
-          Salvar senha
-        </Botao>
-      </form>
-    </main>
+    <>
+      <header className="topo borda-pastel borda-pastel--baixo">
+        <div className="topo__linha">
+          <p className="marca">Sabor de Pastel</p>
+          <Link to="/atendente" className="topo__link">
+            Voltar
+          </Link>
+        </div>
+      </header>
+      <main className="conteudo conteudo--estreito">
+        <h1>Nova senha</h1>
+        <form className="card" onSubmit={salvar} noValidate>
+          <label className="campo">
+            <span>Nova senha</span>
+            <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} autoComplete="new-password" />
+          </label>
+          <label className="campo">
+            <span>Repita a nova senha</span>
+            <input type="password" value={confirma} onChange={(e) => setConfirma(e.target.value)} autoComplete="new-password" />
+          </label>
+          {erro && (
+            <p className="campo__erro" role="alert">
+              {erro}
+            </p>
+          )}
+          <Botao type="submit" largo carregando={enviando}>
+            Salvar senha
+          </Botao>
+        </form>
+      </main>
+    </>
   );
 }
