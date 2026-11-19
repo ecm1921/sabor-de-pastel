@@ -133,6 +133,24 @@ it("após enviar, vai para /pedido/:id e guarda o id e os dados no aparelho", as
   });
 });
 
+it("no dinheiro, pergunta o troco e manda junto na observação", async () => {
+  criarPedido.mockResolvedValue({ id: "abc-123", numero: 7 });
+  await montar();
+  escolherPastelM();
+  digitar("Nome", "Ana");
+  digitar("Telefone com DDD", "31975423850");
+  expect(screen.queryByText("Precisa de troco?")).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Dinheiro" }));
+  enviar();
+  expect(await screen.findByText("Diga se precisa de troco.")).toBeInTheDocument();
+  expect(criarPedido).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Sim, preciso" }));
+  digitar("Troco para quanto? (R$)", "50");
+  enviar();
+  expect(await screen.findByText("Acompanhando abc-123")).toBeInTheDocument();
+  expect(criarPedido.mock.calls[0][0]).toMatchObject({ pagamento: "Dinheiro", observacao: "Troco para R$ 50,00" });
+});
+
 it("os dados só aparecem depois de escolher um item", async () => {
   await montar();
   expect(screen.queryByLabelText("Telefone com DDD")).not.toBeInTheDocument();
