@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Botao } from "../components/base";
+import { CampoSenha } from "../components/CampoSenha";
 import { mensagemDeErro } from "../services/erros";
 import { recuperarSenha } from "../services/auth";
 import { useAuth } from "./AuthProvider";
@@ -70,10 +71,7 @@ export function LoginPage() {
             />
           </label>
           {!modoRecuperar && (
-            <label className="campo">
-              <span>Senha</span>
-              <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} autoComplete="current-password" required />
-            </label>
+            <CampoSenha rotulo="Senha" valor={senha} aoMudar={setSenha} autoComplete="current-password" />
           )}
           {erro && (
             <p className="campo__erro" role="alert">

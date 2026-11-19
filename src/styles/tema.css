@@ -390,7 +390,8 @@ textarea {
   display: block;
   margin-bottom: 14px;
 }
-.campo > span {
+.campo > span,
+.campo__rotulo {
   display: block;
   font-weight: 600;
   font-size: var(--t-0);
@@ -414,6 +415,28 @@ textarea {
   border-color: var(--verde);
   box-shadow: 0 0 0 3px var(--verde-claro);
   outline: none;
+}
+/* senha com botão "Mostrar" dentro do campo, à direita */
+.campo__senha {
+  position: relative;
+}
+.campo__senha input {
+  padding-right: 96px;
+}
+.campo__senha button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  min-width: var(--toque);
+  padding: 0 16px;
+  border: 0;
+  background: none;
+  color: var(--mostarda);
+  font-weight: 700;
+  font-size: var(--t-0);
+  cursor: pointer;
+  border-radius: 0 var(--raio-p) var(--raio-p) 0;
 }
 .campo [aria-invalid="true"] {
   border-color: var(--perigo);
