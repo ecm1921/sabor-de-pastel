@@ -133,7 +133,7 @@ it("após enviar, vai para /pedido/:id e guarda o id e os dados no aparelho", as
   });
 });
 
-it("no dinheiro, pergunta o troco e manda junto na observação", async () => {
+it("no dinheiro, pergunta o troco, calcula quanto devolver e manda na observação", async () => {
   criarPedido.mockResolvedValue({ id: "abc-123", numero: 7 });
   await montar();
   escolherPastelM();
@@ -145,10 +145,14 @@ it("no dinheiro, pergunta o troco e manda junto na observação", async () => {
   expect(await screen.findByText("Diga se precisa de troco.")).toBeInTheDocument();
   expect(criarPedido).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole("button", { name: "Sim, preciso" }));
-  digitar("Troco para quanto? (R$)", "50");
+  digitar("Troco para quanto? (R$)", "10");
+  enviar();
+  expect(await screen.findByText("O valor precisa ser maior que o total do pedido (R$ 15,00).")).toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText(/^Troco para quanto/), { target: { value: "50" } });
+  expect(screen.getByText(/^Seu troco:/)).toHaveTextContent(/Seu troco: R\$\s35,00/);
   enviar();
   expect(await screen.findByText("Acompanhando abc-123")).toBeInTheDocument();
-  expect(criarPedido.mock.calls[0][0]).toMatchObject({ pagamento: "Dinheiro", observacao: "Troco para R$ 50,00" });
+  expect(criarPedido.mock.calls[0][0]).toMatchObject({ pagamento: "Dinheiro", observacao: "Troco para R$ 50,00 (devolver R$ 35,00)" });
 });
 
 it("os dados só aparecem depois de escolher um item", async () => {

@@ -62,7 +62,7 @@ export function CardapioPage() {
   async function enviar() {
     if (travaEnvio.current || !quantidade) return;
     setErroEnvio("");
-    const e = validarDados(dados);
+    const e = validarDados(dados, total);
     setErros(e);
     if (Object.keys(e).length) {
       formRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" });
@@ -77,7 +77,7 @@ export function CardapioPage() {
     setEnviando(true);
     try {
       codigoEnvio.current ??= novoId();
-      const r = await criarPedido({ ...paraEnvio(dados, itens), id: codigoEnvio.current });
+      const r = await criarPedido({ ...paraEnvio(dados, itens, total), id: codigoEnvio.current });
       guardarPedido(r.id);
       guardarDados(dados);
       navegar(`/pedido/${r.id}`);
@@ -155,7 +155,7 @@ export function CardapioPage() {
         {quantidade > 0 && (
           <div className="card" ref={formRef}>
             <h2>Seus dados</h2>
-            <FormDadosPedido dados={dados} aoMudar={setDados} erros={erros} />
+            <FormDadosPedido dados={dados} aoMudar={setDados} erros={erros} total={total} />
             <label className="visualmente-oculto" aria-hidden="true">
               Site
               <input name="site" tabIndex={-1} autoComplete="off" value={armadilha} onChange={(e) => setArmadilha(e.target.value)} />

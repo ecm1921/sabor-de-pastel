@@ -37,7 +37,7 @@ export function NovoPedido() {
   const quantidade = itens.reduce((s, i) => s + i.quantidade, 0);
 
   async function registrar() {
-    const e = validarDados(dados);
+    const e = validarDados(dados, total);
     setErros(e);
     if (Object.keys(e).length) {
       toast("Confira os campos destacados");
@@ -45,7 +45,7 @@ export function NovoPedido() {
     }
     setEnviando(true);
     try {
-      const r = await criarPedido(paraEnvio(dados, itens));
+      const r = await criarPedido(paraEnvio(dados, itens, total));
       toast(`Pedido nº ${r.numero} registrado`);
       mudarCarrinho({ tipo: "limpar" });
       setDados(dadosVazios());
@@ -73,7 +73,7 @@ export function NovoPedido() {
       )}
 
       <div className="card">
-        <FormDadosPedido dados={dados} aoMudar={setDados} erros={erros} />
+        <FormDadosPedido dados={dados} aoMudar={setDados} erros={erros} total={total} />
       </div>
 
       <div className="barra borda-pastel">
