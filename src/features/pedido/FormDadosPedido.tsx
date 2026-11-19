@@ -1,12 +1,15 @@
 import type { ReactNode } from "react";
 import { PAGAMENTOS, TIPOS, type Endereco } from "../../domain/tipos";
 import { Chip } from "../../components/base";
-import type { DadosPedido, ErrosDados } from "./dados";
+import { calcularTroco, type DadosPedido, type ErrosDados } from "./dados";
+import { formatarBRL } from "../../domain/pedido";
 
 interface Props {
   dados: DadosPedido;
   aoMudar: (d: DadosPedido) => void;
   erros: ErrosDados;
+  /** Total do pedido, para calcular o troco. */
+  total: number;
 }
 
 function Campo({ rotulo, erro, children }: { rotulo: string; erro?: string; children: ReactNode }) {
@@ -20,7 +23,8 @@ function Campo({ rotulo, erro, children }: { rotulo: string; erro?: string; chil
 }
 
 /** Telefone, retirada/entrega, endereço, pagamento e observação. */
-export function FormDadosPedido({ dados, aoMudar, erros }: Props) {
+export function FormDadosPedido({ dados, aoMudar, erros, total }: Props) {
+  const troco = calcularTroco(dados, total);
   const muda = (parcial: Partial<DadosPedido>) => aoMudar({ ...dados, ...parcial });
   const mudaEnd = (parcial: Partial<Endereco>) => muda({ endereco: { ...dados.endereco, ...parcial } });
 
@@ -116,6 +120,11 @@ export function FormDadosPedido({ dados, aoMudar, erros }: Props) {
                 aria-invalid={!!erros.trocoPara}
               />
             </Campo>
+          )}
+          {troco !== null && (
+            <p className="troco-calculado" role="status">
+              Seu troco: <b>{formatarBRL(troco)}</b>
+            </p>
           )}
           {erros.troco && dados.precisaTroco === null && <p className="campo__erro">{erros.troco}</p>}
         </fieldset>

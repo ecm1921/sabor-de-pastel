@@ -1466,6 +1466,18 @@ textarea {
 .grupo .chips + .campo {
   margin-top: 14px;
 }
+.troco-calculado {
+  margin: -4px 0 0;
+  padding: 10px 14px;
+  border-radius: var(--raio-p);
+  background: var(--mostarda-clara);
+  font-weight: 600;
+}
+.troco-calculado b {
+  color: var(--mostarda);
+  font-size: var(--t-2);
+  font-variant-numeric: tabular-nums;
+}
 .grupo legend {
   font-weight: 700;
   margin-bottom: 8px;
