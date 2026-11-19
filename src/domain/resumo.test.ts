@@ -36,7 +36,8 @@ it("cancelados não entram no total mas são contados", () => {
   expect(r.porPagamento).toEqual({
     Pix: { quantidade: 1, valor: 40 },
     Dinheiro: { quantidade: 1, valor: 25 },
-    Cartão: { quantidade: 0, valor: 0 },
+    Débito: { quantidade: 0, valor: 0 },
+    Crédito: { quantidade: 0, valor: 0 },
   });
 });
 

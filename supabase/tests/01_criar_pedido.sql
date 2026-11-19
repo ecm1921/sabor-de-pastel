@@ -130,5 +130,21 @@ select pg_temp.espera_erro(
       jsonb_build_object('rua', repeat('a', 121), 'numero', '1', 'bairro', 'Centro')),
   'TEXTO_LONGO', 'endereço com mais de 120 letras é recusado');
 
+-- cartão é separado em débito e crédito; "Cartão" sozinho não é mais aceito
+do $$
+declare r record;
+begin
+  select * into r from criar_pedido('Retirada', 'Débito', '', '', '31975423850', null,
+    '[{"produto_id":"00000000-0000-0000-0000-0000000000a2","tamanho":null,"quantidade":1}]');
+  if (select pagamento from pedidos where id = r.id) <> 'Débito' then raise exception 'FALHOU [aceita Débito]'; end if;
+  select * into r from criar_pedido('Retirada', 'Crédito', '', '', '31975423850', null,
+    '[{"produto_id":"00000000-0000-0000-0000-0000000000a2","tamanho":null,"quantidade":1}]');
+  if (select pagamento from pedidos where id = r.id) <> 'Crédito' then raise exception 'FALHOU [aceita Crédito]'; end if;
+end $$;
+select pg_temp.espera_erro(
+  $q$ select criar_pedido('Retirada','Cartão','','','31975423850',null,
+      '[{"produto_id":"00000000-0000-0000-0000-0000000000a2","tamanho":null,"quantidade":1}]') $q$,
+  '%pedidos_pagamento_check', '"Cartão" sem débito ou crédito é recusado');
+
 rollback;
 select 'OK' as resultado;
